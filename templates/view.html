@@ -1,0 +1,123 @@
+{% extends 'base.html' %} {% block content %}
+
+<link
+  rel="stylesheet"
+  href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css"
+/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='view.css') }}">
+
+<section class="section about-section gray-bg" id="about">
+  <div class="container">
+    <div class="row align-items-center flex-row-reverse">
+      <div class="col-lg-6">
+        <div class="about-text go-to">
+          <h3 class="dark-color">{{details[0][1]}} {{details[0][2]}}</h3>
+
+          <div class="row about-list">
+            <div class="col-md-6">
+              {% if details[0][8]=='UG' %}
+              <div class="media">
+                <label>Course</label>
+                <p>{{ugdetails[0][1]}}</p>
+              </div>
+              {% else %}
+              <div class="media">
+                <label>Course</label>
+                <p>{{pgdetails[0][1]}}</p>
+              </div>
+              {% endif %}
+              <div class="media">
+                <label>Birthday</label>
+                <p>{{details[0][3]}}</p>
+              </div>
+              <div class="media">
+                <label>Gender</label>
+                <p>{{details[0][7]}}</p>
+              </div>
+              <div class="media">
+                <label>Address</label>
+                <p>{{details[0][6]}}</p>
+              </div>
+              <div class="media">
+                <label>FA</label>
+                <p>{{details[0][10]}}</p>
+              </div>
+            </div>
+            <div class="col2 col-md-6">
+              <div class="media">
+                <label>E-mail</label>
+                <p>{{details[0][4]}}</p>
+              </div>
+              <div class="media">
+                <label>Phone</label>
+                <p>{{details[0][5]}}</p>
+              </div>
+              <div class="media">
+                <label>Type</label>
+                <p>{{details[0][8]}}</p>
+              </div>
+              <div class="media">
+                <label>CGPA</label>
+                <p>{{details[0][9]}}</p>
+              </div>
+              {% if details[0][8]=='UG' %}
+              <div class="media">
+                <label>Semester</label>
+                <p>{{ugdetails[0][2]}}</p>
+              </div>
+              {% else %}
+              <div class="media">
+                <label>Course</label>
+                <p>{{pgdetails[0][2]}}</p>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <a class="edit btn btn-primary" href="/edit/">Edit</a>
+
+          <a link href="/home"
+            ><button type="button" class="back btn btn-dark">
+              Back to Home
+            </button></a
+          >
+        </div>
+      </div>
+
+      {% if details[0][7]=='F' %}
+      <div class="col-lg-6">
+        <div class="about-avatar">
+          <img
+            src="https://images.squarespace-cdn.com/content/v1/5fc183d8715d243395d1c919/e0f42d21-fb14-4f5f-a397-81d61a514c5d/Sara+Bitmoji.png"
+            title=""
+            width="400px"
+            height="400px"
+            alt=""
+          />
+        </div>
+      </div>
+      {% else %}
+      <div class="col-lg-6">
+        <div class="about-avatar">
+          <img
+            src="https://bootdey.com/img/Content/avatar/avatar7.png"
+            title=""
+            alt=""
+          />
+        </div>
+      </div>
+      {% endif %} {% with messages = get_flashed_messages() %} {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-success alert-dismissible">
+        <a href="#" class="close" data-dismiss="alert" aria-label="close"
+          >&times;</a
+        >
+        <strong>{{ message }}</strong>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+  </div>
+</section>
+{% endblock %}

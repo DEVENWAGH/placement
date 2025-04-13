@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %} {% endblock %}- FlaskApp</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato&family=Sora:wght@300;400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/fontawesome.min.css"
+      integrity="sha384-jLKHWM3JRmfMU0A5x5AkjWkw/EYfGUAGagvnfryNV3F9VqM98XiIH7VBGVoxVSc7"
+      crossorigin="anonymous"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css"
+      integrity="sha512-YWzhKL2whUzgiheMoBFwW8CKV4qpHQAEuvilg9FAn5VJUDwKZZxkJNuGM4XkWuk94WCrrwslk8yWNGmY1EduTA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+
+  <body>
+    <nav class="navbar navbar-icon-top navbar-expand-lg navbar-dark bg-dark">
+      <a class="navbar-brand" href="#">TNP</a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-toggle="collapse"
+        data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+          {% if session['username']=='11' %}
+          <!-- Admin links -->
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/adminhome">
+              <i class="fa fa-house-user"></i> Home
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/logoutadmin">
+              <i class="fa fa-right-from-bracket"></i> LogoutAdmin
+            </a>
+          </li>
+          {% elif session.get('role') == 'student' %}
+          <!-- Student links -->
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('student_dashboard') }}">
+              <i class="fa fa-house-user"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('view_jobs') }}">
+              <i class="fa fa-briefcase"></i> Jobs
+            </a>
+          </li>
+          {% elif session.get('role') == 'recruiter' %}
+          <!-- Recruiter links -->
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('recruiter_dashboard') }}">
+              <i class="fa fa-house-user"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('post_job') }}">
+              <i class="fa fa-plus-circle"></i> Post Job
+            </a>
+          </li>
+          {% elif session.get('role') == 'faculty' %}
+          <!-- Faculty links -->
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('faculty_dashboard') }}">
+              <i class="fa fa-house-user"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('student_progress') }}">
+              <i class="fa fa-chart-line"></i> Student Progress
+            </a>
+          </li>
+          {% elif session['loggedin'] %}
+          <!-- Default logged-in user links -->
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/home">
+              <i class="fa fa-house-user"></i>Home
+            </a>
+          </li>
+          {% else %}
+          <!-- Not logged in links -->
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/login">
+              <i class="fa fa-right-to-bracket"></i>Login
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/loginadmin">
+              <i class="fa fa-screwdriver-wrench"></i>LoginAdmin
+            </a>
+          </li>
+          {% endif %}
+
+          <!-- Common logout link for all logged-in users -->
+          {% if session['loggedin'] %}
+          <li class="nav-item">
+            <a class="nav-link" href="http://127.0.0.1:5000/logout">
+              <i class="fa fa-right-from-bracket"></i>Logout
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </nav>
+
+    <hr />
+    <div class="content">{% block content %} {% endblock %}</div>
+  </body>
+</html>

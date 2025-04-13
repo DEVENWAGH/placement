@@ -1,0 +1,25 @@
+.form-holder {
+  display: flex;
+  flex-direction: row;
+}
+
+.form-holder:hover {
+  transform: scale(1.1.1.1);
+}
+
+.form-control {
+  width: 60%;
+  font-size: 17px;
+}
+
+.form-control:hover {
+  transform: scale(1.1.1.1);
+}
+
+.back {
+  float: right;
+}
+
+.close:visited .error {
+  visibility: 0;
+}

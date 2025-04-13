@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='viewjobs.css') }}">
+
+<body>
+   {% set count=1 %}
+   {% for ej in ejobs: %}
+     {% if ej|length==8 %}
+       <div class="container1">
+         <a style="color:#fff">{{ ej[1] }}</a>
+
+          <div class="hidden">
+           <div class="same">
+            <div class="sameline1">
+              <h5>Job Title:</h5> {{ej[2]}}<br>
+              <h5>Mininum CGPA Required:</h5> {{ej[4]}}<br>
+            </div>
+            <div class="sameline2">
+              <h5>Package:</h5> {{ej[7]}}<br>
+              <h5>Location:</h5> {{ej[5]}}<br>
+            </div>
+           </div>
+
+          </div>
+          {% if ej[1] in complist %}
+             <a><button type="button" class="applybtn btn btn-dark" id="{{ej.id}}" onclick="click1('{{ej.id}}',this)" disabled >Applied</button></a>
+          {% else %}
+             <a href="/applied/{{ej[1]}}"><button type="button" class="applybtn btn btn-dark" id="{{ej.id}}" onclick="click1('{{ej.id}}',this)">Apply</button></a>
+          {% endif %}
+       </div>
+
+     {% else %}
+       <div class="container1">
+         <a style="color:#fff">{{ ej[1] }}</a>
+
+          <div class="hidden">
+           <div class="same">
+            <div class="sameline1">
+              <h5>Job Title:</h5> {{ej[2]}}<br>
+              <h5>Mininum CGPA Required:</h5> {{ej[4]}}<br>
+            </div>
+            <div class="sameline2">
+              <h5>Stipend:</h5> {{ej[7]}}<br>
+              <h5>Location:</h5> {{ej[5]}}<br>
+            </div>
+
+            <div class="sameline3">
+              <h5>Duration:</h5> {{ej[8]}}
+            </div>
+            </div>
+          </div>
+          {% if ej[1] in complist %}
+             <a><button type="button" class="applybtn btn btn-dark" id="{{ej.id}}" onclick="click2('{{ej.id}}',this)" disabled> Applied</button></a>
+          {% else %}
+             <a href="/applied/{{ej[1]}}"><button type="button" class="applybtn btn btn-dark" id="{{ej.id}}" onclick="click2('{{ej.id}}',this)"> Apply</button></a>
+          {% endif %}
+        </div>
+
+
+
+     {% endif %}
+     {% set count=count+1 %}
+    {% endfor %}
+
+    <a link href="/home"><button type="button" class="back btn btn-dark">Back to Home</button></a>
+
+
+<script>
+
+       var click1=function(value,object){
+           object.innerText="Applied";
+           object.disabled="True";
+           object.preventDefault();
+           return false;
+       };
+
+       var click2=function(value,object){
+           object.innerText="Applied";
+           object.disabled="True";
+           object.preventDefault();
+           return false;
+       };
+
+
+
+
+</script>
+
+
+
+</body>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock %}

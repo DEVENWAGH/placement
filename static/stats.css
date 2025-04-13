@@ -1,0 +1,86 @@
+#tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.row {
+  margin-left: none;
+}
+
+#makepdf {
+  box-shadow: rgba(0, 0, 0, 0.2) 0px 12px 28px 0px,
+    rgba(0, 0, 0, 0.1) 0px 2px 4px 0px,
+    rgba(255, 255, 255, 0.05) 0px 0px 0px 1px inset;
+  border-radius: 10px;
+}
+
+.graph1 {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-right: 5px;
+}
+
+.graph2 {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 5px;
+}
+
+.btnadd {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  height: 50px;
+  font-size: 17px;
+  transition: 1s;
+  width: 61%;
+  border-radius: 10px;
+
+  background-image: linear-gradient(to right, #0d324d, #7f5a83);
+  box-shadow: 0 4px 10px 0 rgba(65, 12, 234, 0.75);
+}
+
+.btnadd:hover {
+  background-position: 100% 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.btnpdf {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+  margin-bottom: 20px;
+
+  height: 50px;
+  font-size: 17px;
+  transition: 1s;
+  width: 61%;
+  border-radius: 10px;
+
+  background-image: linear-gradient(to right, #0d324d, #7f5a83);
+  box-shadow: 0 4px 10px 0 rgba(65, 12, 234, 0.75);
+}
+
+.btnpdf:hover {
+  background-position: 100% 0;
+  transition: all 0.4s ease-in-out;
+}
+
+.example {
+  width: 120%;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

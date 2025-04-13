@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Recruiter Dashboard</h2>
+  <div class="row">
+    <!-- Job Posting Form -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Post New Job</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('post_job') }}">
+            <!-- Job form fields -->
+            <button type="submit" class="btn btn-primary">Post Job</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Applications Management -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Applications Received</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Position</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in applications %}
+              <tr>
+                <td>{{ app.student.name }}</td>
+                <td>{{ app.job.position }}</td>
+                <td>
+                  <button class="btn btn-sm btn-success">Schedule Interview</button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

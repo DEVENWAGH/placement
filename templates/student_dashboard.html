@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Student Dashboard</h2>
+  <div class="row">
+    <!-- Job Listings -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Available Jobs</h4>
+        </div>
+        <div class="card-body">
+          {% for job in jobs %}
+          <div class="job-card">
+            <h5>{{ job.company }} - {{ job.position }}</h5>
+            <button class="btn btn-sm btn-primary">Apply</button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Applications Tracking -->
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h4>Your Applications</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Position</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in applications %}
+              <tr>
+                <td>{{ app.company }}</td>
+                <td>{{ app.position }}</td>
+                <td>{{ app.status }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

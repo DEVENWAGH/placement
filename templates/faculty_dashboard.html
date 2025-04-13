@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Faculty Dashboard</h2>
+  <div class="row">
+    <!-- Student Progress -->
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h4>Student Placement Progress</h4>
+        </div>
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Applications</th>
+                <th>Status</th>
+                <th>Feedback</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for student in students %}
+              <tr>
+                <td>{{ student.name }}</td>
+                <td>{{ student.applications|length }}</td>
+                <td>{{ student.status }}</td>
+                <td>
+                  <button class="btn btn-sm btn-info" 
+                    data-toggle="modal" 
+                    data-target="#feedbackModal-{{ student.id }}">
+                    Add Feedback
+                  </button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modals -->
+{% for student in students %}
+<div class="modal fade" id="feedbackModal-{{ student.id }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Feedback for {{ student.name }}</h5>
+      </div>
+      <div class="modal-body">
+        <form method="POST" action="{{ url_for('submit_feedback') }}">
+          <input type="hidden" name="student_id" value="{{ student.id }}">
+          <textarea class="form-control" name="feedback" required></textarea>
+          <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

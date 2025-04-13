@@ -1,0 +1,67 @@
+{% extends 'base.html' %} {% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %} {% endblock %}- FlaskApp</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='adminhome.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
+  </head>
+
+  <body>
+    <div class="container1">
+      <div class="card1">
+        <div class="imgBx">
+          <img
+            src="https://img.icons8.com/fluency/344/data-configuration.png"
+            class="img-fluid"
+          />
+        </div>
+        <div class="content">
+          <h5 class="card-title">View Database</h5>
+          <p class="card-text">You can view/edit the Student database</p>
+          <a href="/db/" class="btn btn-primary">Button</a>
+        </div>
+      </div>
+
+      <div class="card2">
+        <div class="imgBx">
+          <img
+            src="https://img.icons8.com/color-glass/344/mailbox-closed-flag-up.png"
+            class="img-fluid"
+          />
+        </div>
+        <div class="content">
+          <h5 class="card-title">Post Job</h5>
+          <p class="card-text">You can post a new job/internship here.</p>
+          <a href="/add_job" class="btn btn-primary">Button</a>
+        </div>
+      </div>
+
+      <div class="card3">
+        <div class="imgBx">
+          <img
+            src="https://img.icons8.com/external-itim2101-flat-itim2101/344/external-statistics-network-technology-itim2101-flat-itim2101.png"
+            class="img-fluid"
+          />
+        </div>
+        <div class="content">
+          <h5 class="card-title">View Stats</h5>
+          <p class="card-text">
+            Views statistics on current placement scenario.
+          </p>
+          <a href="/viewstat" class="btn btn-primary">Button</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+{% endblock %}
