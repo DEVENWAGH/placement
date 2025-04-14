@@ -774,6 +774,22 @@ def apply_job(job_id):
     return redirect(url_for('student_dashboard'))
 
 
+@app.route('/delete/<job_id>', methods=['GET'])
+def delete_job(job_id):
+    if 'loggedin' not in session or session.get('role') not in ['admin', 'recruiter']:
+        flash('Unauthorized access', 'danger')
+        return redirect(url_for('login'))
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM job WHERE job_Id = %s', (job_id,))
+        conn.commit()
+        flash('Job deleted successfully!', 'success')
+    except Exception as e:
+        conn.rollback()
+        flash(f'Error deleting job: {e}', 'danger')
+    return redirect(url_for('view_database'))
+
+
 @app.route('/recruiter/dashboard')
 def recruiter_dashboard():
     if 'loggedin' not in session:
@@ -890,59 +906,8 @@ def post_job():
 
 @app.route('/admin/post_job', methods=['GET', 'POST'])
 def admin_post_job():
-    """Handle job posting by admin"""
-    if 'loggedin' not in session:
-        return redirect(url_for('login'))
-    if session.get('role') != 'admin':
-        flash('Access denied. Admin privileges required.')
-        return redirect(url_for('login'))
-    
-    if request.method == 'POST':
-        # Extract form data
-        job_id = request.form['job_Id']
-        company = request.form['Company']
-        position = request.form['Position']
-        eligibility = request.form['Eligibility']
-        cgpa = request.form['CGPA']
-        location = request.form['Location']
-        job_type = request.form['type']
-        
-        # Additional fields if available
-        description = request.form.get('description', '')
-        requirements = request.form.get('requirements', '')
-        
-        cursor = conn.cursor(dictionary=True, buffered=True)
-        
-        # Check if job ID already exists
-        cursor.execute('SELECT job_Id FROM job WHERE job_Id = %s', (job_id,))
-        existing_job = cursor.fetchone()
-        
-        if existing_job:
-            flash('Job ID already exists. Please use a different ID.')
-            return render_template('job.html')
-        
-        try:
-            # Insert into job table
-            cursor.execute('''
-                INSERT INTO job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), %s, %s)
-            ''', (job_id, company, position, eligibility, cgpa, location, job_type, session['username'], description, requirements))
-            
-            conn.commit()
-            
-            # Based on job type, redirect to appropriate page for additional details
-            if job_type == 'Fulltime':
-                return render_template('fulltime.html', id=job_id)
-            else:
-                return render_template('intern.html', id=job_id)
-                
-        except mysql.connector.Error as err:
-            conn.rollback()
-            flash(f'Error adding job: {err}', 'danger')
-            return render_template('job.html')
-    
-    # GET request - show job posting form
-    return render_template('job.html')
+    # This page is disabled/removed
+    return redirect(url_for('admin_dashboard'))
 
 
 @app.route('/update_application/<int:app_id>', methods=['POST'])

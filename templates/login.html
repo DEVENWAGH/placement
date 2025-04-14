@@ -3,6 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlacementHub - Login</title>
     <link
       rel="stylesheet"
@@ -20,6 +21,10 @@
 
       .admin-login-form {
         min-height: 500px;
+        width: 100%;
+        max-width: 500px;
+        padding: 50px 35px;
+        box-sizing: border-box;
       }
 
       .btn {
@@ -28,6 +33,73 @@
 
       label {
         margin-top: 15px;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 768px) {
+        .container {
+          padding-top: 20px;
+        }
+
+        .admin-login-form {
+          min-height: auto;
+          padding: 30px 25px;
+        }
+
+        h3 {
+          font-size: 24px;
+          margin-bottom: 20px;
+        }
+
+        .background .shape {
+          height: 150px;
+          width: 150px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .admin-login-form {
+          padding: 20px 15px;
+        }
+
+        h3 {
+          font-size: 22px;
+          margin-bottom: 15px;
+        }
+
+        input {
+          height: 45px;
+        }
+
+        .btn {
+          padding: 12px 0;
+          font-size: 16px;
+        }
+
+        .background {
+          display: none; /* Hide shapes on very small screens */
+        }
+
+        .col-md-6 {
+          padding: 0 10px;
+        }
+      }
+
+      /* Fix for small height screens */
+      @media (max-height: 600px) {
+        .admin-login-form {
+          min-height: auto;
+          padding-top: 20px;
+          padding-bottom: 20px;
+        }
+
+        label {
+          margin-top: 10px;
+        }
+
+        .btn {
+          margin-top: 15px;
+        }
       }
     </style>
   </head>

@@ -3,6 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PlacementHub - Register</title>
     <link
       rel="stylesheet"
@@ -21,6 +22,94 @@
       rel="stylesheet"
       id="bootstrap-css"
     />
+    <style>
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .register-form {
+          width: 90% !important;
+          padding: 20px !important;
+        }
+
+        h3 {
+          font-size: 24px !important;
+        }
+
+        .form-container {
+          padding: 10px 0;
+          height: auto;
+          min-height: auto;
+        }
+
+        .background .shape {
+          height: 150px;
+          width: 150px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .register-form {
+          width: 100% !important;
+          padding: 15px !important;
+          margin-top: 1em;
+          margin-bottom: 1em;
+        }
+
+        h3 {
+          font-size: 22px !important;
+          margin-bottom: 15px !important;
+        }
+
+        label {
+          font-size: 14px;
+        }
+
+        .btn {
+          font-size: 16px;
+          padding: 10px 0;
+        }
+
+        .background {
+          display: none; /* Hide shapes on very small screens */
+        }
+
+        body.register-body {
+          height: auto;
+          min-height: 100vh;
+        }
+      }
+
+      /* Base improvements */
+      .register-form {
+        width: 500px;
+        margin: 0 auto;
+        box-sizing: border-box;
+      }
+
+      .form-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px 0;
+        height: auto;
+        overflow-y: auto;
+      }
+
+      body.register-body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      /* Fix for very small screens */
+      @media (max-height: 700px) {
+        .form-container {
+          align-items: flex-start;
+          padding-top: 10px;
+        }
+      }
+    </style>
   </head>
 
   <body class="register-body">

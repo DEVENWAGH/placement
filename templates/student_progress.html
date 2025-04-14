@@ -32,6 +32,51 @@
   </div>
   {% endfor %} {% endif %} {% endwith %}
 
+  <!-- Student Placement Progress Table -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h4 class="m-0 font-weight-bold text-primary">
+        <i class="fas fa-chart-bar"></i> Student Placement Progress
+      </h4>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-bordered mb-0">
+          <thead class="thead-light">
+            <tr>
+              <th>Name</th>
+              <th>Registration No.</th>
+              <th>CGPA</th>
+              <th>Applications</th>
+              <th>Shortlisted</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ student.firstName }} {{ student.lastName }}</td>
+              <td>{{ student.regNo }}</td>
+              <td>{{ student.cgpa }}</td>
+              <td>{{ applications|length }}</td>
+              <td>
+                {{ applications | selectattr('status', 'in', ['shortlisted',
+                'interviewed', 'selected', 'accepted']) | list | length }}
+              </td>
+              <td>
+                {% set placed = applications | selectattr('status', 'equalto',
+                'accepted') | list | length > 0 %} {% if placed %}
+                <span class="badge badge-success">Placed</span>
+                {% else %}
+                <span class="badge badge-secondary">Not Placed</span>
+                {% endif %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Student Info Card -->
   <div class="card shadow mb-4">
     <div class="card-header py-3">
