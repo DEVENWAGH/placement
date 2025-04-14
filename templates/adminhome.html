@@ -36,22 +36,6 @@
         </div>
       </div>
 
-      <div class="card2">
-        <div class="imgBx">
-          <img
-            src="https://img.icons8.com/color-glass/344/mailbox-closed-flag-up.png"
-            class="img-fluid"
-          />
-        </div>
-        <div class="content">
-          <h5 class="card-title">Post Job</h5>
-          <p class="card-text">You can post a new job/internship here.</p>
-          <a href="{{ url_for('admin_post_job') }}" class="btn btn-primary"
-            >Post Job</a
-          >
-        </div>
-      </div>
-
       <div class="card3">
         <div class="imgBx">
           <img
@@ -78,7 +62,9 @@
           <p class="card-text">
             Views statistics on current placement scenario.
           </p>
-          <a href="/viewstat" class="btn btn-primary">Button</a>
+          <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary"
+            >Dashboard</a
+          >
         </div>
       </div>
     </div>

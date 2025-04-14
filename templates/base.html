@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>TNP Portal</title>
+    <title>PlacementHub</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
@@ -24,7 +24,7 @@
   <body>
     {% if not hide_navbar %}
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="#">TNP</a>
+      <a class="navbar-brand" href="#">PlacementHub</a>
 
       <button
         class="navbar-toggler"
@@ -43,7 +43,7 @@
           {% if session['username']=='11' %}
           <!-- Admin links -->
           <li class="nav-item">
-            <a class="nav-link" href="http://127.0.0.1:5000/adminhome">
+            <a class="nav-link" href="{{ url_for('adminHome') }}">
               <i class="fa fa-house-user"></i> Home
             </a>
           </li>

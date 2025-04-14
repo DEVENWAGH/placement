@@ -44,18 +44,25 @@
 
 .info-item {
   display: flex;
-  margin-bottom: 15px;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #eaecf4;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
 }
 
 .info-label {
+  width: 40%;
   font-weight: 600;
-  width: 35%;
-  color: #495057;
+  color: #5a5c69;
 }
 
 .info-value {
-  width: 65%;
-  color: #212529;
+  width: 60%;
+  color: #333;
 }
 
 .profile-avatar {
@@ -72,6 +79,7 @@
 }
 
 .profile-actions {
+  text-align: center;
   margin-top: 20px;
   display: flex;
   justify-content: center;
@@ -86,14 +94,24 @@
 }
 
 .btn-edit {
-  background-color: #2575fc;
+  display: inline-block;
+  width: 100%;
+  padding: 10px 20px;
+  background-color: #4e73df;
   color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  text-align: center;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .btn-edit:hover {
-  background-color: #1a68e5;
-  color: white;
+  background-color: #2e59d9;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  color: white;
+  text-decoration: none;
 }
 
 .btn-back {
@@ -107,9 +125,68 @@
   transform: translateY(-2px);
 }
 
+/* Unified container styling */
+.unified-container {
+  border: 1px solid #e3e6f0;
+  border-radius: 0.35rem;
+  padding: 1.25rem;
+  background-color: #f8f9fc;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0.15rem 0.5rem rgba(58, 59, 69, 0.15);
+}
+
+.unified-container h4 {
+  color: #4e73df;
+  border-bottom: 1px solid #e3e6f0;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.unified-container h4:not(:first-child) {
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+}
+
+/* Main profile card styling */
+.main-profile-card {
+  text-align: center;
+  padding: 40px 20px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fc 100%);
+}
+
+.student-name {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.registration-number {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.btn-edit.btn-lg {
+  padding: 12px 40px;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+  border: none;
+  box-shadow: 0 5px 15px rgba(37, 117, 252, 0.2);
+  transition: all 0.3s ease;
+}
+
+.btn-edit.btn-lg:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(37, 117, 252, 0.3);
+}
+
 @media (max-width: 768px) {
   .info-item {
     flex-direction: column;
+    padding-bottom: 1rem;
   }
 
   .info-label,
@@ -118,6 +195,19 @@
   }
 
   .info-label {
-    margin-bottom: 5px;
+    margin-bottom: 0.25rem;
+  }
+
+  .unified-container {
+    padding: 1rem;
+  }
+
+  .student-name {
+    font-size: 2rem;
+  }
+
+  .btn-edit.btn-lg {
+    padding: 10px 30px;
+    font-size: 1rem;
   }
 }

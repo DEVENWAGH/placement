@@ -15,7 +15,7 @@
 
   <div class="row profile-header">
     <div class="col-md-8">
-      <h2>Student Profile</h2>
+      <h2>PlacementHub Student Profile</h2>
       <p class="text-muted">View your personal and academic information</p>
     </div>
     <div class="col-md-4 text-right">
@@ -29,40 +29,27 @@
   </div>
 
   <div class="row">
-    <div class="col-md-4 mb-4">
-      <div class="profile-card">
-        <div class="card-header">
-          <div class="profile-avatar">
-            {% if details and details[0][7] == 'F' %}
-            <img
-              src="https://bootdey.com/img/Content/avatar/avatar8.png"
-              alt="Profile Avatar"
-            />
-            {% else %}
-            <img
-              src="https://bootdey.com/img/Content/avatar/avatar7.png"
-              alt="Profile Avatar"
-            />
-            {% endif %}
-          </div>
-          <h3>{{ details[0][1] }} {{ details[0][2] }}</h3>
-          <p class="mb-0">{{ details[0][8] }} Student</p>
-        </div>
+    <div class="col-md-12 mb-4">
+      <div class="profile-card main-profile-card">
         <div class="card-body text-center">
-          <div class="profile-actions">
-            <a href="/edit/" class="btn btn-edit">
+          <h1 class="student-name">{{ details[0][1] }} {{ details[0][2] }}</h1>
+          <div class="profile-actions mt-4">
+            <a href="{{ url_for('edit_profile') }}" class="btn btn-edit btn-lg">
               <i class="fas fa-edit"></i> Edit Profile
             </a>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="col-md-8">
+  <!-- Detailed Student Information -->
+  <div class="row">
+    <div class="col-md-12">
       <div class="profile-card">
         <div class="card-body profile-info">
-          <!-- Personal Information -->
-          <div class="info-section">
+          <!-- Personal Information Container -->
+          <div class="info-section unified-container">
             <h4><i class="fas fa-user"></i> Personal Information</h4>
 
             <div class="info-item">
@@ -82,13 +69,18 @@
 
             <div class="info-item">
               <div class="info-label">Date of Birth</div>
-              <div class="info-value">{{ details[0][3] }}</div>
+              <div class="info-value">
+                {% if student.birthDate %} {{
+                student.birthDate.strftime('%d-%m-%Y') if student.birthDate is
+                not string else student.birthDate }} {% else %} Not specified {%
+                endif %}
+              </div>
             </div>
 
             <div class="info-item">
               <div class="info-label">Gender</div>
               <div class="info-value">
-                {{ "Male" if details[0][7] == "M" else "Female" }}
+                {% if details[0][7] == 'M' %} Male {% else %} Female {% endif %}
               </div>
             </div>
 
@@ -98,33 +90,38 @@
             </div>
           </div>
 
-          <!-- Academic Information -->
-          <div class="info-section">
+          <!-- Academic Information Container -->
+          <div class="info-section unified-container">
             <h4><i class="fas fa-graduation-cap"></i> Academic Information</h4>
 
             <div class="info-item">
               <div class="info-label">Education Type</div>
               <div class="info-value">
-                {{ "Undergraduate" if details[0][8] == "UG" else "Postgraduate"
-                }}
+                {% if details[0][8] == 'UG' %} Undergraduate {% else %}
+                Postgraduate {% endif %}
               </div>
             </div>
 
             <div class="info-item">
               <div class="info-label">Branch</div>
               <div class="info-value">
-                {% if details[0][8] == 'UG' and ugdetails %} {{ ugdetails[0][1]
-                }} {% elif details[0][8] == 'PG' and pgdetails %} {{
-                pgdetails[0][1] }} {% else %} Not specified {% endif %}
+                {% if details[0][10] %} {{ details[0][10] }} {% elif ugdetails
+                and ugdetails|length > 0 %} {{ ugdetails[0]['branch'] if
+                ugdetails[0] is mapping else ugdetails[0][1] }} {% elif
+                pgdetails and pgdetails|length > 0 %} {{ pgdetails[0]['branch']
+                if pgdetails[0] is mapping else pgdetails[0][1] }} {% else %}
+                Not specified {% endif %}
               </div>
             </div>
 
             <div class="info-item">
               <div class="info-label">Current Semester</div>
               <div class="info-value">
-                {% if details[0][8] == 'UG' and ugdetails %} {{ ugdetails[0][2]
-                }} {% elif details[0][8] == 'PG' and pgdetails %} {{
-                pgdetails[0][2] }} {% else %} Not specified {% endif %}
+                {% if student.semester %} {{ student.semester }} {% elif
+                ugdetails and ugdetails|length > 0 %} {{
+                ugdetails[0]['semester'] }} {% elif pgdetails and
+                pgdetails|length > 0 %} {{ pgdetails[0]['semester'] }} {% else
+                %} Not specified {% endif %}
               </div>
             </div>
 

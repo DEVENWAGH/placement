@@ -1,8 +1,8 @@
+# PlacementHub
 
-# Placement Cell Management System
-![David (path)](https://img.shields.io/github/package-json/v/plankanban/planka)  
+![David (path)](https://img.shields.io/github/package-json/v/plankanban/planka)
 
-The Placement Cell Management System permits the Student to login/sign-up into the application and view current job
+The PlacementHub permits the Student to login/sign-up into the application and view current job
 opportunities available. The System would store all the academic as well as personal details of the
 students who wish to be placed and the Companies who offer jobs to the students. Students can
 apply for the jobs if they are eligible. The admin can manage the database and post upcoming job or
@@ -25,14 +25,12 @@ view the Statistics of Current Placement Drive.
 
 ![](https://drive.google.com/uc?export=view&id=19WOQ-9P2KNQTbqCW1lFkDb8B47qaX9uq)
 
-
-
 ## Installation and Project Startup Guide
 
 Please refer to these links and make sure you have Python, Flask and Postgres installed and working properly on your machine:
 
-* https://linuxize.com/post/how-to-install-flask-on-ubuntu-20-04/
-* https://www.digitalocean.com/community/tutorials/how-to-use-a-postgresql-database-in-a-flask-application
+- https://linuxize.com/post/how-to-install-flask-on-ubuntu-20-04/
+- https://www.digitalocean.com/community/tutorials/how-to-use-a-postgresql-database-in-a-flask-application
 
 Go to your Project Directory.
 
@@ -41,31 +39,36 @@ To run this project type:
 ```bash
   source venv/bin/activate
 ```
+
 ```bash
   export FLASK_APP=app
 ```
+
 ```bash
   export FLASK_ENV=development
 ```
+
 ```bash
   export DB_USERNAME="sammy"
 ```
+
 Username might vary from user to user so remember you Username.
+
 ```bash
   export DB_PASSWORD="password"
 ```
+
 Password might vary from user to user so remember you Password.
+
 ```bash
   flask run
 ```
+
 If everything worked fine then you should see:
 
 ![](https://drive.google.com/uc?export=view&id=1W1C8ITwn6f7QwhmTXD8mj8n35D6hnq-s)
 
 Now Open any browser and type the https link provided in the running server (https://127.0.0.1:5000).
-
-
-
 
 ## Demo
 
@@ -81,5 +84,3 @@ Now Open any browser and type the https link provided in the running server (htt
 ![](https://drive.google.com/uc?export=view&id=1BWZKt85bO3BruQRuZ4jRgUc3ElJjGicQ)
 ![](https://drive.google.com/uc?export=view&id=1jj0OFFE3WoWm4ig4h5tb2NPP14Etln5o)
 ![](https://drive.google.com/uc?export=view&id=14E8b0Tz0GA5aTwjearsbCkSKQXA2EAD9)
-
-

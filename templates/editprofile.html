@@ -1,6 +1,9 @@
 {% extends 'base.html' %} {% block content %}
 <head>
-    <link rel="stylesheet" href="{{ url_for('static', filename='editprofile.css') }}">
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='editprofile.css') }}"
+  />
 </head>
 <div class="form-body">
   <div class="row">
@@ -10,7 +13,6 @@
           <form
             class="was-validated"
             action="{{ url_for('update') }}"
-            on
             method="post"
           >
             <h3 class="header">Edit your Details</h3>
@@ -23,10 +25,11 @@
                 minlength="9"
                 maxlength="9"
                 value="{{details[0][0]}}"
-                disabled
+                readonly
               />
             </div>
 
+            <!-- Other readonly fields -->
             <div class="col-md-12">
               <input
                 class="form-control"
@@ -34,7 +37,7 @@
                 name="fname"
                 value="{{details[0][1]}}"
                 placeholder="First Name"
-                disabled
+                readonly
               />
             </div>
 
@@ -45,19 +48,20 @@
                 name="lname"
                 value="{{details[0][2]}}"
                 placeholder="Last Name"
-                disabled
+                readonly
               />
             </div>
 
             <div>
-              <label for="bdaymonth">Enter Date Of Birth </label>
+              <label for="bdaymonth">Date Of Birth </label>
               <input
                 type="date"
                 id="year"
                 name="year"
                 min="1996-01-01"
                 max="2002-12-31"
-                disabled
+                value="{{details[0][3]}}"
+                readonly
               />
             </div>
 
@@ -68,33 +72,36 @@
                 name="email"
                 value="{{details[0][4]}}"
                 placeholder="E-mail Address"
-                disabled
+                readonly
               />
             </div>
 
+            <!-- Editable fields -->
             <div class="col-md-12">
               <input
                 class="form-control"
                 type="tel"
                 name="phone"
                 placeholder="Phone Number"
-                type="tel"
                 pattern="^\d{10}$"
                 value="{{details[0][5]}}"
-                disabled
+                required
               />
+              <div class="valid-feedback">Phone field is valid!</div>
+              <div class="invalid-feedback">Phone field cannot be blank!</div>
             </div>
 
             <div class="col-md-12">
               <input
                 class="form-control"
-                type=""
+                type="text"
                 name="address"
                 value="{{details[0][6]}}"
                 placeholder="Address"
-                pattern="([A-Z])\w+"
-                disabled
+                required
               />
+              <div class="valid-feedback">Address field is valid!</div>
+              <div class="invalid-feedback">Address field cannot be blank!</div>
             </div>
 
             <div class="col-md-12">
@@ -105,6 +112,8 @@
                 name="cgpa"
                 placeholder="CGPA"
                 value="{{details[0][9]}}"
+                min="0"
+                max="10"
                 required
               />
               <div class="valid-feedback">CGPA field is valid!</div>
@@ -119,50 +128,38 @@
                 name="cursem"
                 placeholder="Current Semester"
                 max="8"
+                min="1"
                 value="{{ugdetails[0][2]}}"
                 required
               />
-              <div class="valid-feedback">Current Semester field is valid!</div>
+              <div class="valid-feedback">Semester field is valid!</div>
               <div class="invalid-feedback">
-                Current Semster field cannot be blank!
+                Semester field cannot be blank!
               </div>
             </div>
             {% else %}
-
             <div class="col-md-12">
               <input
                 class="form-control"
                 type="number"
                 name="cursem"
                 placeholder="Current Semester"
-                max="8"
+                max="4"
+                min="1"
                 value="{{pgdetails[0][2]}}"
                 required
               />
-              <div class="valid-feedback">Current Semester field is valid!</div>
+              <div class="valid-feedback">Semester field is valid!</div>
               <div class="invalid-feedback">
-                Current Semster field cannot be blank!
+                Semester field cannot be blank!
               </div>
             </div>
             {% endif %}
-
-            <div class="col-md-12">
-              <input
-                class="form-control"
-                type="text"
-                name="fa"
-                placeholder="Faculty Advisor"
-                minlength="10"
-                value="{{details[0][11]}}"
-                disabled
-              />
-            </div>
 
             <div class="form-check">
               <input
                 class="form-check-input"
                 type="checkbox"
-                value=""
                 id="invalidCheck"
                 required
               />
@@ -178,11 +175,11 @@
               <button id="submit" type="submit" class="btn btn-primary">
                 Save Changes
               </button>
-              <a link href="/view/"
-                ><button type="button" class="back btn btn-dark">
+              <a href="{{ url_for('student_profile') }}">
+                <button type="button" class="back btn btn-dark">
                   Back to View Profile
-                </button></a
-              >
+                </button>
+              </a>
             </div>
           </form>
         </div>
@@ -190,5 +187,4 @@
     </div>
   </div>
 </div>
-
 {% endblock %}

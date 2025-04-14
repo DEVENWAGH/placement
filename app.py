@@ -239,91 +239,28 @@ def create_profile():
         cgpa = request.form['cgpa']
         
         try:
-            # Create tables if they don't exist - with updated structure
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS Student (
-                    regNo VARCHAR(10) PRIMARY KEY,
-                    firstName VARCHAR(50),
-                    lastName VARCHAR(50),
-                    birthDate DATE,
-                    email VARCHAR(100),
-                    phone VARCHAR(15),
-                    address TEXT,
-                    gender CHAR(1),
-                    type ENUM('UG', 'PG'),
-                    cgpa DECIMAL(4,2)
-                )
-            ''')
-            
-            # Check if all required columns exist in the Student table
-            cursor.execute("DESCRIBE Student")
-            columns = cursor.fetchall()
-            column_names = [col['Field'] for col in columns]
-            
-            # Add missing columns if they don't exist
-            required_columns = {
-                'phone': "ALTER TABLE Student ADD COLUMN phone VARCHAR(15) AFTER email",
-                'address': "ALTER TABLE Student ADD COLUMN address TEXT AFTER phone",
-                'gender': "ALTER TABLE Student ADD COLUMN gender CHAR(1) AFTER address",
-                'type': "ALTER TABLE Student ADD COLUMN type ENUM('UG', 'PG') AFTER gender",
-                'cgpa': "ALTER TABLE Student ADD COLUMN cgpa DECIMAL(4,2) AFTER type",
-                'birthDate': "ALTER TABLE Student ADD COLUMN birthDate DATE AFTER lastName"
-            }
-            
-            for col_name, alter_query in required_columns.items():
-                if col_name not in column_names:
-                    cursor.execute(alter_query)
-                    print(f"Added missing column: {col_name}")
-            
-            # Now try to insert the data
+            # Insert directly into Student table with all fields
             cursor.execute('''
                 INSERT INTO Student 
-                (regNo, firstName, lastName, birthDate, email, phone, address, gender, type, cgpa)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (regNo, firstName, lastName, birthDate, email, phone, address, gender, 
+                 type, branch, semester, cgpa, date_added)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURDATE())
             ''', (
                 session['username'], firstName, lastName, birthDate, email, 
-                phone, address, gender, education_type, cgpa
+                phone, address, gender, education_type, branch, semester, cgpa
             ))
             
-            # Continue with the rest of the code for UG/PG tables
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS UG (
-                    regNo VARCHAR(10) PRIMARY KEY,
-                    branch VARCHAR(50),
-                    semester INT,
-                    FOREIGN KEY (regNo) REFERENCES Student(regNo) ON DELETE CASCADE
-                )
-            ''')
-            
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS PG (
-                    regNo VARCHAR(10) PRIMARY KEY,
-                    branch VARCHAR(50),
-                    semester INT,
-                    FOREIGN KEY (regNo) REFERENCES Student(regNo) ON DELETE CASCADE
-                )
-            ''')
-            
-            # Insert education details based on type
+            # Insert into education type specific table (UG or PG)
             if education_type == 'UG':
                 cursor.execute('''
-                    INSERT INTO UG (regNo, branch, semester)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO UG (regNo, branch, semester, date_added)
+                    VALUES (%s, %s, %s, CURDATE())
                 ''', (session['username'], branch, semester))
             else:
                 cursor.execute('''
-                    INSERT INTO PG (regNo, branch, semester)
-                    VALUES (%s, %s, %s)
+                    INSERT INTO PG (regNo, branch, semester, date_added)
+                    VALUES (%s, %s, %s, CURDATE())
                 ''', (session['username'], branch, semester))
-            
-            # Create applied table for backward compatibility
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS applied (
-                    regno VARCHAR(10) PRIMARY KEY,
-                    companies TEXT,
-                    FOREIGN KEY (regno) REFERENCES Student(regNo) ON DELETE CASCADE
-                )
-            ''')
             
             conn.commit()
             flash('Profile created successfully!', 'success')
@@ -374,6 +311,70 @@ def edit_profile():
                            semester=semester)
 
 
+@app.route('/update', methods=['GET', 'POST'])
+def update():
+    if 'loggedin' not in session or session.get('role') != 'student':
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        # Get form data
+        cgpa = request.form['cgpa']
+        phone = request.form['phone']
+        address = request.form['address']
+        
+        # Get current semester based on education type
+        cursor = conn.cursor(dictionary=True, buffered=True)
+        try:
+            # Get student type first
+            cursor.execute('SELECT type FROM Student WHERE regNo = %s', (session['username'],))
+            student_type = cursor.fetchone()
+            
+            if not student_type:
+                flash('Student record not found', 'danger')
+                return redirect(url_for('student_profile'))
+            
+            # Update student basic info
+            cursor.execute('''
+                UPDATE Student 
+                SET phone = %s, address = %s, cgpa = %s
+                WHERE regNo = %s
+            ''', (phone, address, cgpa, session['username']))
+            
+            # Update semester in the appropriate education table
+            if 'cursem' in request.form:
+                semester = request.form['cursem']
+                if student_type['type'] == 'UG':
+                    cursor.execute('''
+                        UPDATE UG 
+                        SET semester = %s
+                        WHERE regNo = %s
+                    ''', (semester, session['username']))
+                else:
+                    cursor.execute('''
+                        UPDATE PG 
+                        SET semester = %s
+                        WHERE regNo = %s
+                    ''', (semester, session['username']))
+            
+            # Explicitly commit changes to the database
+            conn.commit()
+            print(f"Profile updated: phone={phone}, address={address}, cgpa={cgpa}")
+            flash('Profile updated successfully!', 'success')
+            
+        except mysql.connector.Error as err:
+            conn.rollback()
+            print(f"Database error in update(): {err}")
+            flash(f'Error updating profile: {err}', 'danger')
+        finally:
+            cursor.close()
+        
+        # Redirect to student profile to see the changes
+        return redirect(url_for('student_profile'))
+    
+    # If not POST, redirect to edit profile
+    return redirect(url_for('edit_profile'))
+
+
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
     if session.get('role') != 'student':
@@ -405,6 +406,13 @@ def update_profile():
             SET phone = %s, address = %s, cgpa = %s
             WHERE regNo = %s
         ''', (phone, address, cgpa, session['username']))
+        
+        # Also update the phone in users table if needed
+        cursor.execute('''
+            UPDATE users 
+            SET email = (SELECT email FROM Student WHERE regNo = %s)
+            WHERE username = %s
+        ''', (session['username'], session['username']))
         
         # Update education table based on type
         if student_type['type'] == 'UG':
@@ -438,7 +446,7 @@ def student_profile():
     cursor = conn.cursor(dictionary=True, buffered=True)
     
     try:
-        # Get student basic information
+        # Get student basic information with proper date formatting
         cursor.execute('''
             SELECT s.*, 
                    DATE_FORMAT(s.birthDate, '%%d-%%m-%%Y') as formatted_dob
@@ -462,7 +470,8 @@ def student_profile():
             student['address'],
             student['gender'],
             student['type'],
-            student['cgpa']
+            student['cgpa'],
+            student['branch']  # Include branch directly from Student table
         ]]
         
         # Initialize both education details variables as None
@@ -473,15 +482,30 @@ def student_profile():
         if student['type'] == 'UG':
             cursor.execute('SELECT * FROM UG WHERE regNo = %s', (session['username'],))
             ug_details = cursor.fetchall()
+            
+            # Update student object with semester from UG table if available
+            if ug_details and len(ug_details) > 0:
+                student['semester'] = ug_details[0]['semester']  # Access by dictionary key, not index
         else:
             cursor.execute('SELECT * FROM PG WHERE regNo = %s', (session['username'],))
             pg_details = cursor.fetchall()
+            
+            # Update student object with semester from PG table if available
+            if pg_details and len(pg_details) > 0:
+                student['semester'] = pg_details[0]['semester']  # Access by dictionary key, not index
+        
+        # Ensure birthDate is properly formatted
+        if 'birthDate' in student and student['birthDate'] and not student.get('formatted_dob'):
+            from datetime import datetime
+            if isinstance(student['birthDate'], datetime):
+                student['formatted_dob'] = student['birthDate'].strftime('%d-%m-%Y')
         
         # Pass both variables to the template, even if one is None
         return render_template('view.html', 
                            details=details, 
                            ugdetails=ug_details, 
-                           pgdetails=pg_details)
+                           pgdetails=pg_details,
+                           student=student)  # Pass the complete student object for easier access
                            
     except mysql.connector.Error as err:
         flash(f'Error retrieving profile: {err}', 'danger')
@@ -864,6 +888,63 @@ def post_job():
     return render_template('post_job.html')
 
 
+@app.route('/admin/post_job', methods=['GET', 'POST'])
+def admin_post_job():
+    """Handle job posting by admin"""
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'admin':
+        flash('Access denied. Admin privileges required.')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        # Extract form data
+        job_id = request.form['job_Id']
+        company = request.form['Company']
+        position = request.form['Position']
+        eligibility = request.form['Eligibility']
+        cgpa = request.form['CGPA']
+        location = request.form['Location']
+        job_type = request.form['type']
+        
+        # Additional fields if available
+        description = request.form.get('description', '')
+        requirements = request.form.get('requirements', '')
+        
+        cursor = conn.cursor(dictionary=True, buffered=True)
+        
+        # Check if job ID already exists
+        cursor.execute('SELECT job_Id FROM job WHERE job_Id = %s', (job_id,))
+        existing_job = cursor.fetchone()
+        
+        if existing_job:
+            flash('Job ID already exists. Please use a different ID.')
+            return render_template('job.html')
+        
+        try:
+            # Insert into job table
+            cursor.execute('''
+                INSERT INTO job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), %s, %s)
+            ''', (job_id, company, position, eligibility, cgpa, location, job_type, session['username'], description, requirements))
+            
+            conn.commit()
+            
+            # Based on job type, redirect to appropriate page for additional details
+            if job_type == 'Fulltime':
+                return render_template('fulltime.html', id=job_id)
+            else:
+                return render_template('intern.html', id=job_id)
+                
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'Error adding job: {err}', 'danger')
+            return render_template('job.html')
+    
+    # GET request - show job posting form
+    return render_template('job.html')
+
+
 @app.route('/update_application/<int:app_id>', methods=['POST'])
 def update_application(app_id):
     if session.get('role') != 'recruiter':
@@ -961,6 +1042,16 @@ def faculty_dashboard():
         'placement_rate': 0
     }
     
+    # Initialize application stats
+    app_stats = {
+        'total': 0,
+        'shortlisted': 0,
+        'interviewed': 0,
+        'selected': 0,
+        'accepted': 0,
+        'rejected': 0
+    }
+    
     # Get total students count
     cursor.execute('SELECT COUNT(*) as count FROM Student')
     result = cursor.fetchone()
@@ -981,11 +1072,32 @@ def faculty_dashboard():
     if stats['total_students'] > 0:
         stats['placement_rate'] = round((stats['placed_students'] / stats['total_students']) * 100)
     
+    # Get application statistics
+    cursor.execute('''
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) as shortlisted,
+            SUM(CASE WHEN status = 'interviewed' THEN 1 ELSE 0 END) as interviewed,
+            SUM(CASE WHEN status = 'selected' THEN 1 ELSE 0 END) as selected,
+            SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted,
+            SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+        FROM applications
+    ''')
+    
+    app_stat_result = cursor.fetchone()
+    if app_stat_result:
+        app_stats['total'] = app_stat_result['total'] or 0
+        app_stats['shortlisted'] = app_stat_result['shortlisted'] or 0
+        app_stats['interviewed'] = app_stat_result['interviewed'] or 0
+        app_stats['selected'] = app_stat_result['selected'] or 0
+        app_stats['accepted'] = app_stat_result['accepted'] or 0
+        app_stats['rejected'] = app_stat_result['rejected'] or 0
+    
     # Get students with their application statistics
     cursor.execute('''
         SELECT s.*, 
             COUNT(DISTINCT a.id) as application_count,
-            SUM(CASE WHEN a.status = 'shortlisted' OR a.status = 'interviewed' OR a.status = 'accepted' THEN 1 ELSE 0 END) as shortlisted_count,
+            SUM(CASE WHEN a.status = 'shortlisted' OR a.status = 'interviewed' OR a.status = 'selected' OR a.status = 'accepted' THEN 1 ELSE 0 END) as shortlisted_count,
             MAX(CASE WHEN a.status = 'accepted' THEN 1 ELSE 0 END) as is_placed
         FROM Student s
         LEFT JOIN applications a ON s.regNo = a.student_id
@@ -1007,6 +1119,7 @@ def faculty_dashboard():
     
     return render_template('faculty_dashboard.html', 
                           stats=stats,
+                          app_stats=app_stats,
                           students=students,
                           feedback_history=feedback_history)
 
@@ -1139,61 +1252,123 @@ def adminHome():
     return render_template('adminhome.html')
 
 
-@app.route('/admin/post_job', methods=['GET', 'POST'])
-def admin_post_job():
-    """Handle job posting by admin"""
+@app.route('/admin/dashboard')
+def admin_dashboard():
     if 'loggedin' not in session:
         return redirect(url_for('login'))
     if session.get('role') != 'admin':
         flash('Access denied. Admin privileges required.')
         return redirect(url_for('login'))
     
-    if request.method == 'POST':
-        # Extract form data
-        job_id = request.form['job_Id']
-        company = request.form['Company']
-        position = request.form['Position']
-        eligibility = request.form['Eligibility']
-        cgpa = request.form['CGPA']
-        location = request.form['Location']
-        job_type = request.form['type']
-        
-        # Additional fields if available
-        description = request.form.get('description', '')
-        requirements = request.form.get('requirements', '')
-        
-        cursor = conn.cursor(dictionary=True, buffered=True)
-        
-        # Check if job ID already exists
-        cursor.execute('SELECT job_Id FROM job WHERE job_Id = %s', (job_id,))
-        existing_job = cursor.fetchone()
-        
-        if existing_job:
-            flash('Job ID already exists. Please use a different ID.')
-            return render_template('job.html')
-        
-        try:
-            # Insert into job table
-            cursor.execute('''
-                INSERT INTO job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), %s, %s)
-            ''', (job_id, company, position, eligibility, cgpa, location, job_type, session['username'], description, requirements))
-            
-            conn.commit()
-            
-            # Based on job type, redirect to appropriate page for additional details
-            if job_type == 'Fulltime':
-                return render_template('fulltime.html', id=job_id)
-            else:
-                return render_template('intern.html', id=job_id)
-                
-        except mysql.connector.Error as err:
-            conn.rollback()
-            flash(f'Error adding job: {err}', 'danger')
-            return render_template('job.html')
+    cursor = conn.cursor(dictionary=True, buffered=True)
     
-    # GET request - show job posting form
-    return render_template('job.html')
+    # Initialize stats
+    stats = {
+        'total_students': 0,
+        'total_jobs': 0,
+        'placement_rate': 0,
+        'unique_companies': 0,
+    }
+    
+    # Initialize application stats
+    app_stats = {
+        'total': 0,
+        'shortlisted': 0,
+        'interviewed': 0,
+        'selected': 0,
+        'accepted': 0,
+        'rejected': 0
+    }
+    
+    # Get student count
+    cursor.execute('SELECT COUNT(*) as count FROM Student')
+    result = cursor.fetchone()
+    if result:
+        stats['total_students'] = result['count']
+    
+    # Get job count
+    cursor.execute('SELECT COUNT(*) as count FROM job')
+    result = cursor.fetchone()
+    if result:
+        stats['total_jobs'] = result['count']
+    
+    # Get unique companies count
+    cursor.execute('SELECT COUNT(DISTINCT company) as count FROM job')
+    result = cursor.fetchone()
+    if result:
+        stats['unique_companies'] = result['count']
+    
+    # Get placed students count and calculate rate
+    cursor.execute('''
+        SELECT COUNT(DISTINCT student_id) as count 
+        FROM applications 
+        WHERE status = 'accepted'
+    ''')
+    result = cursor.fetchone()
+    if result:
+        placed_students = result['count']
+        if stats['total_students'] > 0:
+            stats['placement_rate'] = round((placed_students / stats['total_students']) * 100)
+    
+    # Get application statistics
+    cursor.execute('''
+        SELECT 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END) as shortlisted,
+            SUM(CASE WHEN status = 'interviewed' THEN 1 ELSE 0 END) as interviewed,
+            SUM(CASE WHEN status = 'selected' THEN 1 ELSE 0 END) as selected,
+            SUM(CASE WHEN status = 'accepted' THEN 1 ELSE 0 END) as accepted,
+            SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+        FROM applications
+    ''')
+    
+    app_stat_result = cursor.fetchone()
+    if app_stat_result:
+        app_stats['total'] = app_stat_result['total'] or 0
+        app_stats['shortlisted'] = app_stat_result['shortlisted'] or 0
+        app_stats['interviewed'] = app_stat_result['interviewed'] or 0
+        app_stats['selected'] = app_stat_result['selected'] or 0
+        app_stats['accepted'] = app_stat_result['accepted'] or 0
+        app_stats['rejected'] = app_stat_result['rejected'] or 0
+    
+    # Get latest jobs
+    cursor.execute('''
+        SELECT j.*, COUNT(a.id) as application_count
+        FROM job j
+        LEFT JOIN applications a ON j.job_Id = a.job_id
+        GROUP BY j.job_Id
+        ORDER BY j.posted_date DESC
+        LIMIT 5
+    ''')
+    latest_jobs = cursor.fetchall()
+    
+    # Get recent activities (simplistic implementation)
+    recent_activities = []
+    
+    # Get recent applications
+    cursor.execute('''
+        SELECT a.applied_date, a.status, s.firstName, s.lastName, j.company, j.position
+        FROM applications a
+        JOIN Student s ON a.student_id = s.regNo
+        JOIN job j ON a.job_id = j.job_Id
+        ORDER BY a.applied_date DESC
+        LIMIT 5
+    ''')
+    
+    recent_apps = cursor.fetchall()
+    for app in recent_apps:
+        activity = {
+            'date': app['applied_date'].strftime('%Y-%m-%d'),
+            'time': app['applied_date'].strftime('%H:%M'),
+            'description': f"{app['firstName']} {app['lastName']} applied for {app['position']} at {app['company']}"
+        }
+        recent_activities.append(activity)
+    
+    return render_template('admin_dashboard.html', 
+                          stats=stats,
+                          app_stats=app_stats,
+                          latest_jobs=latest_jobs,
+                          recent_activities=recent_activities)
 
 
 @app.route('/admin_manage_users', methods=['GET', 'POST'])
@@ -1252,6 +1427,106 @@ def admin_manage_users():
     
     # Render the user management template
     return render_template('admin_manage_users.html')
+
+
+@app.route('/edit_user', methods=['POST'])
+def edit_user():
+    if 'loggedin' not in session or session.get('role') != 'admin':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('login'))
+
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    cursor = conn.cursor()
+    # Update email
+    cursor.execute('UPDATE users SET email = %s WHERE username = %s', (email, username))
+    # Update password if provided
+    if password:
+        hashed_password = generate_password_hash(password)
+        cursor.execute('UPDATE users SET password = %s WHERE username = %s', (hashed_password, username))
+    conn.commit()
+    cursor.close()
+    flash('User credentials updated successfully!', 'success')
+    return redirect(url_for('view_database'))
+
+
+@app.route('/db/', methods=['GET', 'POST'])
+def view_database():
+    """Handle database viewing and management for admin"""
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'admin':
+        flash('Access denied. Admin privileges required.')
+        return redirect(url_for('login'))
+
+    # Use dictionary=True for users so template can access user.username etc.
+    cursor = conn.cursor()
+    cursor_dict = conn.cursor(dictionary=True)
+
+    cursor.execute('SELECT * FROM Student ORDER BY regNo')
+    students = cursor.fetchall()
+    cursor.execute('SELECT * FROM UG ORDER BY regNo')
+    ugs = cursor.fetchall()
+    cursor.execute('SELECT * FROM PG ORDER BY regNo')
+    pgs = cursor.fetchall()
+    cursor.execute('SELECT * FROM job ORDER BY job_Id')
+    job = cursor.fetchall()
+    cursor.execute('SELECT * FROM fulltime ORDER BY job_Id')
+    fulltime = cursor.fetchall()
+    cursor.execute('SELECT * FROM internship ORDER BY job_Id')
+    intern = cursor.fetchall()
+    cursor.execute('SELECT * FROM applied ORDER BY regno')
+    applied = cursor.fetchall()
+
+    # Fetch users as dictionaries for template
+    cursor_dict.execute('SELECT * FROM users WHERE role != "admin" ORDER BY username')
+    users = cursor_dict.fetchall()
+
+    # Handle add faculty/recruiter POST forms (if any)
+    if request.method == 'POST':
+        action = request.form.get('action')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        fullname = request.form.get('fullname')
+        password = request.form.get('password')
+        from werkzeug.security import generate_password_hash
+        hashed_password = generate_password_hash(password)
+        cursor2 = conn.cursor()
+        # Check if the username or email already exist
+        cursor2.execute('SELECT * FROM users WHERE username = %s OR email = %s', (username, email))
+        account = cursor2.fetchone()
+        if account:
+            flash('Account already exists with that username or email!', 'danger')
+        else:
+            if action == 'add_faculty':
+                cursor2.execute(
+                    'INSERT INTO users (username, password, email, role, fullname) VALUES (%s, %s, %s, %s, %s)',
+                    (username, hashed_password, email, 'faculty', fullname)
+                )
+                conn.commit()
+                flash('Faculty account created successfully!', 'success')
+            elif action == 'add_recruiter':
+                cursor2.execute(
+                    'INSERT INTO users (username, password, email, role, fullname) VALUES (%s, %s, %s, %s, %s)',
+                    (username, hashed_password, email, 'recruiter', fullname)
+                )
+                conn.commit()
+                flash('Recruiter account created successfully!', 'success')
+        cursor2.close()
+
+    return render_template(
+        'index.html',
+        students=students,
+        ugs=ugs,
+        pgs=pgs,
+        job=job,
+        fulltime=fulltime,
+        intern=intern,
+        applied=applied,
+        users=users
+    )
 
 
 @app.route('/logout')

@@ -52,12 +52,14 @@ CREATE TABLE Student (
     regNo VARCHAR(10) PRIMARY KEY,
     firstName VARCHAR(150),
     lastName VARCHAR(50),
-    dob DATE,
+    birthDate DATE,
     email VARCHAR(100),
-    phoneNo BIGINT,
+    phone VARCHAR(15),
     address VARCHAR(200),
     gender CHAR(1),
     type VARCHAR(5), # UG or PG
+    branch VARCHAR(100),
+    semester INT,
     cgpa FLOAT,
     fa VARCHAR(100),  # Faculty Advisor
     date_added DATE,
@@ -126,7 +128,7 @@ CREATE TABLE applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(10),
     job_id VARCHAR(50),
-    status ENUM('applied', 'shortlisted', 'interviewed', 'hired', 'rejected') DEFAULT 'applied',
+    status ENUM('applied', 'shortlisted', 'interviewed', 'selected', 'accepted', 'rejected') DEFAULT 'applied',
     applied_date DATE,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES Student(regNo) ON DELETE CASCADE,
@@ -155,6 +157,14 @@ CREATE TABLE feedback (
     FOREIGN KEY (faculty_id) REFERENCES users(username) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES Student(regNo) ON DELETE CASCADE
 );""")
+
+# Create applied table for backward compatibility
+cur.execute("""
+CREATE TABLE IF NOT EXISTS applied (
+    regno VARCHAR(10) PRIMARY KEY,
+    companies TEXT
+);
+""")
 
 # Optional: Insert initial data for testing
 
@@ -185,7 +195,7 @@ INSERT INTO users (username, password, email, role, fullname)
 VALUES (%s, %s, %s, %s, %s)
 """, ('R001', recruiter_password, 'recruiter@example.com', 'recruiter', 'Recruiter Company'))
 
-# Example job posting
+# Example job posting (Fulltime)
 cur.execute("""
 INSERT INTO Job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -197,6 +207,19 @@ cur.execute("""
 INSERT INTO fulltime (job_Id, bond, package)
 VALUES (%s, %s, %s)
 """, ('JOB001', '2', 800000))
+
+# Example job posting (Internship)
+cur.execute("""
+INSERT INTO Job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+""", ('JOB002', 'DataCorp', 'Data Analyst Intern', 'Bachelor of Technology, Computer Science Engineering', 6.5,
+       'Remote', 'internship', 'R001', today,
+       '6-month internship for aspiring data analysts.', 'Python, SQL, basic statistics'))
+
+cur.execute("""
+INSERT INTO internship (job_Id, duration, ppo, salary)
+VALUES (%s, %s, %s, %s)
+""", ('JOB002', '6', 'yes', 25000))
 
 conn.commit()
 cur.close()

@@ -2,7 +2,7 @@
 <div class="container mt-5">
   <div class="row mb-4">
     <div class="col-md-8">
-      <h2>Student Dashboard</h2>
+      <h2>PlacementHub Dashboard</h2>
       <p>Welcome, {{ student.firstName }} {{ student.lastName }}</p>
     </div>
     <div class="col-md-4 text-right">
@@ -196,6 +196,10 @@
                   <span class="badge badge-success">Shortlisted</span>
                   {% elif app.status == 'interviewed' %}
                   <span class="badge badge-info">Interviewed</span>
+                  {% elif app.status == 'selected' %}
+                  <span class="badge badge-primary">Selected</span>
+                  {% elif app.status == 'accepted' %}
+                  <span class="badge badge-success">Accepted</span>
                   {% elif app.status == 'rejected' %}
                   <span class="badge badge-danger">Rejected</span>
                   {% else %}

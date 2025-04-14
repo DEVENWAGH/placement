@@ -107,7 +107,7 @@
                       class="form-control"
                       id="dob"
                       name="dob"
-                      value="{{ student.birthDate_display }}"
+                      value="{% if student.formatted_dob %}{{ student.formatted_dob }}{% elif student.birthDate %}{% if student.birthDate is string %}{{ student.birthDate }}{% else %}{{ student.birthDate.strftime('%d-%m-%Y') if student.birthDate }}{% endif %}{% else %}Not specified{% endif %}"
                       readonly
                     />
                     <small class="form-text text-muted"
