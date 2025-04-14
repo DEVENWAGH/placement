@@ -13,8 +13,12 @@ import json
 import random
 from datetime import datetime
 
+from dotenv import load_dotenv  # <-- Add this line
+
 app = Flask(__name__)
 
+# Load environment variables from .env file
+load_dotenv()  # <-- Add this line
 
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
@@ -32,11 +36,11 @@ cache.init_app(app=app, config={"CACHE_TYPE": "SimpleCache"})
 
 Session(app)
 
-
-DB_NAME = "placement"
-DB_USER = "root"
-DB_PASS = "root"
-DB_HOST = "127.0.0.1"
+# Replace hardcoded DB credentials with environment variables
+DB_NAME = os.environ.get("DB_NAME", "placement")
+DB_USER = os.environ.get("DB_USER", "root")
+DB_PASS = os.environ.get("DB_PASSWORD", "root")
+DB_HOST = os.environ.get("DB_HOST", "127.0.0.1")
 
 try:
     conn = mysql.connector.connect(

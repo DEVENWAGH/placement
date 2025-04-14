@@ -104,10 +104,10 @@ mysql -u username -p placement_hub < database_schema.sql
 3. Configure environment variables by updating the .env file in the project root:
 
 ```
-DB_NAME=placement_hub
-DB_USER=your_mysql_username
-DB_PASSWORD=your_mysql_password
-DB_HOST=localhost
+DB_NAME=placement
+DB_USER=root
+DB_PASSWORD=root
+DB_HOST=127.0.0.1
 ```
 
 ### Step 5: Run the Application
@@ -129,7 +129,7 @@ Now open any browser and access the URL provided in the running server (http://1
 ### Default Admin Login
 
 - Username: admin
-- Password: admin123
+- Password: 12345678
 
 ### Database Structure Overview
 
