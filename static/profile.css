@@ -1,0 +1,123 @@
+/* Student Profile Styling */
+.profile-container {
+  padding: 30px 0;
+}
+
+.profile-header {
+  margin-bottom: 30px;
+}
+
+.profile-card {
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.profile-card .card-header {
+  background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+.profile-card .card-header h3 {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.profile-info {
+  padding: 25px;
+}
+
+.info-section {
+  margin-bottom: 25px;
+}
+
+.info-section h4 {
+  color: #2575fc;
+  font-size: 18px;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.info-item {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.info-label {
+  font-weight: 600;
+  width: 35%;
+  color: #495057;
+}
+
+.info-value {
+  width: 65%;
+  color: #212529;
+}
+
+.profile-avatar {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-avatar img {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 5px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-actions {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.profile-actions .btn {
+  padding: 8px 25px;
+  border-radius: 30px;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.btn-edit {
+  background-color: #2575fc;
+  color: white;
+}
+
+.btn-edit:hover {
+  background-color: #1a68e5;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-back {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-back:hover {
+  background-color: #5a6268;
+  color: white;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .info-item {
+    flex-direction: column;
+  }
+
+  .info-label,
+  .info-value {
+    width: 100%;
+  }
+
+  .info-label {
+    margin-bottom: 5px;
+  }
+}

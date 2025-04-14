@@ -4,10 +4,7 @@
     <div class="col-md-8">
       <h2>Student Progress</h2>
       <div class="mb-2">
-        <a
-          href="{{ url_for('faculty_dashboard') }}"
-          class="btn btn-sm btn-outline-secondary"
-        >
+        <a href="/faculty/dashboard" class="btn btn-sm btn-outline-secondary">
           <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
       </div>
@@ -50,14 +47,23 @@
             }}
           </p>
           <p><strong>Registration No:</strong> {{ student.regNo }}</p>
-          <p><strong>Email:</strong> {{ student.email }}</p>
+          <p><strong>Email:</strong> {{ student.email or "Not provided" }}</p>
+          {% if student.phoneNo and student.phoneNo != 'None' %}
           <p><strong>Phone:</strong> {{ student.phoneNo }}</p>
+          {% endif %}
         </div>
         <div class="col-md-6">
           <p><strong>CGPA:</strong> {{ student.cgpa }}</p>
           <p><strong>Course Type:</strong> {{ student.type }}</p>
+          {% if student.fa and student.fa != 'None' %}
           <p><strong>Faculty Advisor:</strong> {{ student.fa }}</p>
-          <p><strong>Date Of Birth:</strong> {{ student.dob }}</p>
+          {% endif %} {% if student.birthDate %}
+          <p>
+            <strong>Date Of Birth:</strong> {{
+            student.birthDate.strftime('%d-%m-%Y') if student.birthDate else ""
+            }}
+          </p>
+          {% endif %}
         </div>
       </div>
     </div>

@@ -108,7 +108,7 @@ def index():
     return redirect(url_for('login'))
 
 
-@app.route('/login/', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     cursor = conn.cursor(dictionary=True, buffered=True)
 
@@ -131,7 +131,7 @@ def login():
                 flash('Incorrect admin credentials')
                 return render_template('login.html', hide_navbar=True)
 
-        # Check if account exists using either username or email
+        # Check if account exists using MySQL
         cursor.execute('SELECT * FROM users WHERE username = %s OR email = %s', (username, username))
         account = cursor.fetchone()
         
@@ -144,6 +144,7 @@ def login():
         else:
             print("No matching account found")
 
+        # If account exists in accounts table in our database
         if account and check_password_hash(account['password'], password):
             # Create session data
             session['loggedin'] = True
@@ -156,14 +157,19 @@ def login():
             elif account['role'] == 'recruiter':
                 return redirect(url_for('recruiter_dashboard'))
             elif account['role'] == 'faculty':
-                return redirect(url_for('faculty_dashboard'))
+                # Use direct URL instead of url_for to bypass potential errors
+                return redirect('/faculty/dashboard')
             elif account['role'] == 'admin':
                 return redirect(url_for('adminHome'))
             
-            # Default redirect to home page
-            return redirect(url_for('home'))
+            # Default redirect to home page if no specific role
+            return redirect('/')
         else:
-            flash('Incorrect username/password')
+            # Provide more specific error message
+            if account:
+                flash('Incorrect password. Please try again.')
+            else:
+                flash('Account not found. Please check your username or email.')
 
     return render_template('login.html', hide_navbar=True)
 
@@ -330,6 +336,100 @@ def create_profile():
     return render_template('create_profile.html', user_email=user_email)
 
 
+@app.route('/edit/')
+def edit_profile():
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+    
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    
+    # Get student basic information
+    cursor.execute('SELECT * FROM Student WHERE regNo = %s', (session['username'],))
+    student = cursor.fetchone()
+    
+    if not student:
+        flash('Please complete your profile first', 'warning')
+        return redirect(url_for('create_profile'))
+    
+    # Get branch and semester based on education type
+    branch = ""
+    semester = 0
+    
+    if student['type'] == 'UG':
+        cursor.execute('SELECT branch, semester FROM UG WHERE regNo = %s', (session['username'],))
+        edu_details = cursor.fetchone()
+        if edu_details:
+            branch = edu_details['branch']
+            semester = edu_details['semester']
+    else:
+        cursor.execute('SELECT branch, semester FROM PG WHERE regNo = %s', (session['username'],))
+        edu_details = cursor.fetchone()
+        if edu_details:
+            branch = edu_details['branch']
+            semester = edu_details['semester']
+    
+    return render_template('edit_profile.html', 
+                           student=student, 
+                           branch=branch, 
+                           semester=semester)
+
+
+@app.route('/update_profile', methods=['POST'])
+def update_profile():
+    if session.get('role') != 'student':
+        return redirect(url_for('login'))
+    
+    if request.method != 'POST':
+        return redirect(url_for('student_profile'))
+    
+    # Extract form data
+    phone = request.form['phone']
+    address = request.form['address']
+    semester = request.form['semester']
+    cgpa = request.form['cgpa']
+    
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    
+    try:
+        # Get student education type
+        cursor.execute('SELECT type FROM Student WHERE regNo = %s', (session['username'],))
+        student_type = cursor.fetchone()
+        
+        if not student_type:
+            flash('Student record not found', 'danger')
+            return redirect(url_for('student_profile'))
+        
+        # Update student basic info
+        cursor.execute('''
+            UPDATE Student 
+            SET phone = %s, address = %s, cgpa = %s
+            WHERE regNo = %s
+        ''', (phone, address, cgpa, session['username']))
+        
+        # Update education table based on type
+        if student_type['type'] == 'UG':
+            cursor.execute('''
+                UPDATE UG 
+                SET semester = %s
+                WHERE regNo = %s
+            ''', (semester, session['username']))
+        else:
+            cursor.execute('''
+                UPDATE PG 
+                SET semester = %s
+                WHERE regNo = %s
+            ''', (semester, session['username']))
+        
+        conn.commit()
+        flash('Profile updated successfully!', 'success')
+        
+    except mysql.connector.Error as err:
+        conn.rollback()
+        flash(f'Error updating profile: {err}', 'danger')
+    
+    return redirect(url_for('student_profile'))
+
+
 @app.route('/student/profile', methods=['GET', 'POST'])
 def student_profile():
     if session.get('role') != 'student':
@@ -337,26 +437,55 @@ def student_profile():
     
     cursor = conn.cursor(dictionary=True, buffered=True)
     
-    cursor.execute('SELECT * FROM Student WHERE regNo = %s', (session['username'],))
-    details = cursor.fetchall()
-    
-    cursor.execute('SELECT type FROM Student WHERE regNo = %s', (session['username'],))
-    typee = cursor.fetchone()
-    
-    if not typee:
-        flash('Please complete your profile first', 'warning')
-        return redirect(url_for('create_profile'))
-    
-    typ = typee['type']
-    
-    if typ == 'UG':
-        cursor.execute('SELECT * FROM UG WHERE regNo = %s', (session['username'],))
-        education_details = cursor.fetchall()
-        return render_template('view.html', details=details, ugdetails=education_details)
-    else:
-        cursor.execute('SELECT * FROM PG WHERE regNo = %s', (session['username'],))
-        education_details = cursor.fetchall()
-        return render_template('view.html', details=details, pgdetails=education_details)
+    try:
+        # Get student basic information
+        cursor.execute('''
+            SELECT s.*, 
+                   DATE_FORMAT(s.birthDate, '%%d-%%m-%%Y') as formatted_dob
+            FROM Student s 
+            WHERE s.regNo = %s
+        ''', (session['username'],))
+        student = cursor.fetchone()
+        
+        if not student:
+            flash('Please complete your profile first', 'warning')
+            return redirect(url_for('create_profile'))
+        
+        # Convert student to list format expected by the template
+        details = [[
+            student['regNo'],
+            student['firstName'],
+            student['lastName'],
+            student.get('formatted_dob') or student.get('birthDate'),
+            student['email'],
+            student['phone'],
+            student['address'],
+            student['gender'],
+            student['type'],
+            student['cgpa']
+        ]]
+        
+        # Initialize both education details variables as None
+        ug_details = None
+        pg_details = None
+        
+        # Fetch the appropriate education details based on type
+        if student['type'] == 'UG':
+            cursor.execute('SELECT * FROM UG WHERE regNo = %s', (session['username'],))
+            ug_details = cursor.fetchall()
+        else:
+            cursor.execute('SELECT * FROM PG WHERE regNo = %s', (session['username'],))
+            pg_details = cursor.fetchall()
+        
+        # Pass both variables to the template, even if one is None
+        return render_template('view.html', 
+                           details=details, 
+                           ugdetails=ug_details, 
+                           pgdetails=pg_details)
+                           
+    except mysql.connector.Error as err:
+        flash(f'Error retrieving profile: {err}', 'danger')
+        return redirect(url_for('student_dashboard'))
 
 
 @app.route('/student/dashboard')
@@ -660,6 +789,81 @@ def recruiter_dashboard():
     return render_template('recruiter_dashboard.html', jobs=jobs, applications=applications)
 
 
+@app.route('/post_job', methods=['GET', 'POST'])
+def post_job():
+    """Handle job posting by recruiter"""
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'recruiter':
+        flash('Access denied. Recruiter privileges required.')
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        # Extract form data
+        job_id = request.form['job_Id']
+        company = request.form['Company']
+        position = request.form['Position']
+        cgpa = request.form['CGPA']
+        location = request.form['Location']
+        job_type = request.form['type']
+        
+        # Convert eligibility checkboxes to string
+        eligibility_values = request.form.getlist('Eligibility')
+        eligibility = '#'.join(eligibility_values)
+        
+        # Additional fields if available
+        description = request.form.get('description', '')
+        requirements = request.form.get('requirements', '')
+        
+        cursor = conn.cursor(dictionary=True, buffered=True)
+        
+        # Check if job ID already exists
+        cursor.execute('SELECT job_Id FROM job WHERE job_Id = %s', (job_id,))
+        existing_job = cursor.fetchone()
+        
+        if existing_job:
+            flash('Job ID already exists. Please use a different ID.')
+            return render_template('post_job.html')
+        
+        try:
+            # Insert into job table
+            cursor.execute('''
+                INSERT INTO job (job_Id, company, position, eligibility, cgpa, loc, type, recruiter_id, posted_date, description, requirements)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, CURDATE(), %s, %s)
+            ''', (job_id, company, position, eligibility, cgpa, location, job_type, session['username'], description, requirements))
+            
+            # Add specific details based on job type
+            if job_type == 'Fulltime':
+                bond = request.form.get('bond', '0')
+                package = request.form.get('package', '0')
+                
+                cursor.execute('''
+                    INSERT INTO fulltime (job_Id, bond, package)
+                    VALUES (%s, %s, %s)
+                ''', (job_id, bond, package))
+            else:  # Internship
+                duration = request.form.get('duration', '0')
+                ppo = request.form.get('ppo', 'no')
+                salary = request.form.get('salary', '0')
+                
+                cursor.execute('''
+                    INSERT INTO internship (job_Id, duration, ppo, salary)
+                    VALUES (%s, %s, %s, %s)
+                ''', (job_id, duration, ppo, salary))
+            
+            conn.commit()
+            flash('Job posted successfully!')
+            return redirect(url_for('recruiter_dashboard'))
+            
+        except mysql.connector.Error as err:
+            conn.rollback()
+            flash(f'Error adding job: {err}', 'danger')
+            return render_template('post_job.html')
+    
+    # GET request - show job posting form
+    return render_template('post_job.html')
+
+
 @app.route('/update_application/<int:app_id>', methods=['POST'])
 def update_application(app_id):
     if session.get('role') != 'recruiter':
@@ -739,6 +943,191 @@ def schedule_interview(app_id):
     return redirect(url_for('recruiter_dashboard'))
 
 
+@app.route('/faculty/dashboard')
+def faculty_dashboard():
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'faculty':
+        flash('Access denied. Faculty privileges required.')
+        return redirect(url_for('login'))
+    
+    # Fetch data for faculty dashboard
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    
+    # Initialize stats
+    stats = {
+        'total_students': 0,
+        'placed_students': 0,
+        'placement_rate': 0
+    }
+    
+    # Get total students count
+    cursor.execute('SELECT COUNT(*) as count FROM Student')
+    result = cursor.fetchone()
+    if result:
+        stats['total_students'] = result['count']
+    
+    # Get placed students count (students who have been accepted for a job)
+    cursor.execute('''
+        SELECT COUNT(DISTINCT student_id) as count 
+        FROM applications 
+        WHERE status = 'accepted'
+    ''')
+    result = cursor.fetchone()
+    if result:
+        stats['placed_students'] = result['count']
+    
+    # Calculate placement rate
+    if stats['total_students'] > 0:
+        stats['placement_rate'] = round((stats['placed_students'] / stats['total_students']) * 100)
+    
+    # Get students with their application statistics
+    cursor.execute('''
+        SELECT s.*, 
+            COUNT(DISTINCT a.id) as application_count,
+            SUM(CASE WHEN a.status = 'shortlisted' OR a.status = 'interviewed' OR a.status = 'accepted' THEN 1 ELSE 0 END) as shortlisted_count,
+            MAX(CASE WHEN a.status = 'accepted' THEN 1 ELSE 0 END) as is_placed
+        FROM Student s
+        LEFT JOIN applications a ON s.regNo = a.student_id
+        GROUP BY s.regNo
+        ORDER BY s.firstName
+    ''')
+    students = cursor.fetchall()
+    
+    # Get recent feedback provided by this faculty
+    cursor.execute('''
+        SELECT f.*, s.firstName, s.lastName
+        FROM feedback f
+        JOIN Student s ON f.student_id = s.regNo
+        WHERE f.faculty_id = %s
+        ORDER BY f.created_at DESC
+        LIMIT 5
+    ''', (session['username'],))
+    feedback_history = cursor.fetchall()
+    
+    return render_template('faculty_dashboard.html', 
+                          stats=stats,
+                          students=students,
+                          feedback_history=feedback_history)
+
+
+@app.route('/student/progress/<student_id>')
+def student_progress(student_id):
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'faculty':
+        flash('Access denied. Faculty privileges required.')
+        return redirect(url_for('login'))
+    
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    
+    # Get student details with proper date formatting
+    cursor.execute('''
+        SELECT s.*, 
+               DATE_FORMAT(s.birthDate, '%%d-%%m-%%Y') as formatted_dob
+        FROM Student s 
+        WHERE s.regNo = %s
+    ''', (student_id,))
+    student = cursor.fetchone()
+    
+    if not student:
+        flash('Student not found', 'danger')
+        return redirect(url_for('faculty_dashboard'))
+    
+    # Ensure proper date formatting for display
+    if student and student['birthDate']:
+        try:
+            from datetime import datetime
+            # Convert string to date if needed
+            if isinstance(student['birthDate'], str):
+                student['birthDate'] = datetime.strptime(student['birthDate'], '%Y-%m-%d')
+        except Exception as e:
+            print(f"Error formatting date: {e}")
+            # Set to None if there's a formatting error
+            student['birthDate'] = None
+    
+    # Get student's applications
+    cursor.execute('''
+        SELECT j.company, j.position, a.status, a.applied_date, a.id
+        FROM applications a 
+        JOIN job j ON a.job_id = j.job_Id 
+        WHERE a.student_id = %s
+        ORDER BY a.applied_date DESC
+    ''', (student_id,))
+    applications = cursor.fetchall()
+    
+    # Get interview schedule if any
+    cursor.execute('''
+        SELECT i.schedule_time, i.meeting_link, j.company, j.position 
+        FROM interviews i 
+        JOIN applications a ON i.application_id = a.id 
+        JOIN job j ON a.job_id = j.job_Id 
+        WHERE a.student_id = %s AND (a.status = 'shortlisted' OR a.status = 'interviewed')
+    ''', (student_id,))
+    interviews = cursor.fetchall()
+    
+    # Get feedback history
+    cursor.execute('''
+        SELECT f.message, u.fullname, f.created_at
+        FROM feedback f 
+        JOIN users u ON f.faculty_id = u.username 
+        WHERE f.student_id = %s 
+        ORDER BY f.created_at DESC
+    ''', (student_id,))
+    feedback = cursor.fetchall()
+    
+    return render_template('student_progress.html', 
+                          student=student,
+                          applications=applications,
+                          interviews=interviews,
+                          feedback=feedback)
+
+
+@app.route('/submit_feedback', methods=['POST'])
+def submit_feedback():
+    if 'loggedin' not in session or session.get('role') != 'faculty':
+        flash('Access denied', 'danger')
+        return redirect(url_for('login'))
+    
+    student_id = request.form.get('student_id')
+    message = request.form.get('message')
+    
+    if not student_id or not message:
+        flash('Missing required information', 'danger')
+        return redirect(url_for('faculty_dashboard'))
+    
+    cursor = conn.cursor(dictionary=True, buffered=True)
+    
+    # Check if feedback table exists, create if not
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS feedback (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id VARCHAR(20) NOT NULL,
+            faculty_id VARCHAR(20) NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES Student(regNo),
+            FOREIGN KEY (faculty_id) REFERENCES users(username)
+        )
+    ''')
+    
+    # Insert new feedback
+    cursor.execute('''
+        INSERT INTO feedback (student_id, faculty_id, message)
+        VALUES (%s, %s, %s)
+    ''', (student_id, session['username'], message))
+    
+    conn.commit()
+    
+    flash('Feedback submitted successfully', 'success')
+    
+    # Redirect back to student progress page if coming from there
+    if 'student_id' in request.referrer:
+        return redirect(url_for('student_progress', student_id=student_id))
+    else:
+        return redirect(url_for('faculty_dashboard'))
+
+
 @app.route('/adminHome')
 def adminHome():
     if 'loggedin' not in session:
@@ -805,6 +1194,64 @@ def admin_post_job():
     
     # GET request - show job posting form
     return render_template('job.html')
+
+
+@app.route('/admin_manage_users', methods=['GET', 'POST'])
+def admin_manage_users():
+    """Handle admin user management - add faculty and recruiter users"""
+    if 'loggedin' not in session:
+        return redirect(url_for('login'))
+    if session.get('role') != 'admin':
+        flash('Access denied. Admin privileges required.')
+        return redirect(url_for('login'))
+    
+    # Handle form submissions
+    if request.method == 'POST':
+        action = request.form.get('action')
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        # Hash the password for security
+        hashed_password = generate_password_hash(password)
+        
+        try:
+            cursor = conn.cursor(dictionary=True, buffered=True)
+            
+            # Check if the username or email already exist
+            cursor.execute('SELECT * FROM users WHERE username = %s OR email = %s', 
+                           (username, email))
+            account = cursor.fetchone()
+            
+            if account:
+                flash('Account already exists with that username or email!', 'danger')
+            else:
+                # Add faculty user
+                if action == 'add_faculty':
+                    cursor.execute(
+                        'INSERT INTO users (username, password, email, role, fullname) VALUES (%s, %s, %s, %s, %s)',
+                        (username, hashed_password, email, 'faculty', username)
+                    )
+                    conn.commit()
+                    flash('Faculty account created successfully!', 'success')
+                
+                # Add recruiter user
+                elif action == 'add_recruiter':
+                    cursor.execute(
+                        'INSERT INTO users (username, password, email, role, fullname) VALUES (%s, %s, %s, %s, %s)',
+                        (username, hashed_password, email, 'recruiter', username)
+                    )
+                    conn.commit()
+                    flash('Recruiter account created successfully!', 'success')
+        
+        except Exception as e:
+            conn.rollback()
+            flash(f'Error creating account: {str(e)}', 'danger')
+        finally:
+            cursor.close()
+    
+    # Render the user management template
+    return render_template('admin_manage_users.html')
 
 
 @app.route('/logout')

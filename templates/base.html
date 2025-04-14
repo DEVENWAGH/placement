@@ -79,12 +79,15 @@
           {% elif session.get('role') == 'faculty' %}
           <!-- Faculty links -->
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('faculty_dashboard') }}">
+            <a class="nav-link" href="/faculty/dashboard">
               <i class="fa fa-house-user"></i> Dashboard
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('student_progress') }}">
+            <a
+              class="nav-link"
+              href="{{ url_for('student_progress', student_id='') }}"
+            >
               <i class="fa fa-chart-line"></i> Student Progress
             </a>
           </li>
