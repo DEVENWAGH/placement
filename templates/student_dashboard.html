@@ -1,54 +1,390 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container mt-5">
-  <h2>Student Dashboard</h2>
-  <div class="row">
-    <!-- Job Listings -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h4>Available Jobs</h4>
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Student Dashboard</h2>
+      <p>Welcome, {{ student.firstName }} {{ student.lastName }}</p>
+    </div>
+    <div class="col-md-4 text-right">
+      <a href="{{ url_for('student_profile') }}" class="btn btn-outline-primary"
+        >View/Edit Profile</a
+      >
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %} {% if messages %} {% for message
+  in messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- Upcoming Interviews -->
+  {% if interviews %}
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card border-left-warning shadow h-100">
+        <div class="card-header bg-warning text-white">
+          <h4><i class="fas fa-calendar-check"></i> Upcoming Interviews</h4>
         </div>
         <div class="card-body">
-          {% for job in jobs %}
-          <div class="job-card">
-            <h5>{{ job.company }} - {{ job.position }}</h5>
-            <button class="btn btn-sm btn-primary">Apply</button>
+          {% for interview in interviews %}
+          <div class="alert alert-info">
+            <h5>{{ interview.company }} - {{ interview.position }}</h5>
+            <p><strong>Date & Time:</strong> {{ interview.schedule_time }}</p>
+            <p>
+              <strong>Meeting Link:</strong>
+              <a href="{{ interview.meeting_link }}" target="_blank"
+                >Join Interview</a
+              >
+            </p>
           </div>
           {% endfor %}
         </div>
       </div>
     </div>
-    
-    <!-- Applications Tracking -->
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h4>Your Applications</h4>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <!-- Job Listings -->
+    <div class="col-md-7">
+      <div class="card shadow mb-4">
+        <div
+          class="card-header py-3 d-flex justify-content-between align-items-center"
+        >
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-briefcase"></i> Available Jobs
+          </h4>
+          <div class="dropdown">
+            <button
+              class="btn btn-sm btn-outline-primary dropdown-toggle"
+              type="button"
+              id="jobFilterDropdown"
+              data-toggle="dropdown"
+            >
+              Filter & Sort
+            </button>
+            <div class="dropdown-menu dropdown-menu-right">
+              <h6 class="dropdown-header">Filter by Type:</h6>
+              <a class="dropdown-item" href="#" data-filter="all">All Jobs</a>
+              <a class="dropdown-item" href="#" data-filter="Fulltime"
+                >Full-time Only</a
+              >
+              <a class="dropdown-item" href="#" data-filter="internship"
+                >Internships Only</a
+              >
+              <div class="dropdown-divider"></div>
+              <h6 class="dropdown-header">Sort by:</h6>
+              <a class="dropdown-item" href="#" data-sort="company">Company</a>
+              <a class="dropdown-item" href="#" data-sort="cgpa"
+                >CGPA (Low to High)</a
+              >
+              <a class="dropdown-item" href="#" data-sort="recent"
+                >Recently Posted</a
+              >
+            </div>
+          </div>
         </div>
         <div class="card-body">
-          <table class="table">
+          {% if jobs|length > 0 %}
+          <div class="form-group">
+            <input
+              type="text"
+              class="form-control"
+              id="jobSearch"
+              placeholder="Search jobs by company or position..."
+            />
+          </div>
+          <div id="jobsList">
+            {% for job in jobs %}
+            <div
+              class="card mb-3 job-card"
+              data-type="{{ job.type }}"
+              data-company="{{ job.company|lower }}"
+              data-position="{{ job.position|lower }}"
+              data-cgpa="{{ job.cgpa }}"
+            >
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h5 class="card-title">
+                      {{ job.company }} - {{ job.position }}
+                    </h5>
+                    <p class="card-text">
+                      <span
+                        class="badge {% if job.type == 'Fulltime' %}badge-primary{% else %}badge-info{% endif %}"
+                        >{{ job.type }}</span
+                      >
+                      <span class="badge badge-secondary">{{ job.loc }}</span>
+                      <span class="badge badge-success"
+                        >Min CGPA: {{ job.cgpa }}</span
+                      >
+                    </p>
+                    <p class="card-text">{{ job.compensation }}</p>
+                    {% if job.description %}
+                    <p
+                      class="card-text small text-muted job-description collapse"
+                    >
+                      {{ job.description }}
+                    </p>
+                    <a href="#" class="show-more-link small"
+                      >Show more details</a
+                    >
+                    {% endif %}
+                  </div>
+                  <div class="col-md-4 text-right">
+                    <button
+                      data-job-id="{{ job.job_Id }}"
+                      data-company="{{ job.company }}"
+                      data-position="{{ job.position }}"
+                      data-toggle="modal"
+                      data-target="#applyJobModal"
+                      class="btn btn-sm btn-primary apply-btn"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <p class="text-center py-3">
+            No jobs available matching your qualifications.
+          </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Applications Tracking -->
+    <div class="col-md-5">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-clipboard-list"></i> Your Applications
+          </h4>
+        </div>
+        <div class="card-body">
+          {% if applications|length > 0 %}
+          <table class="table table-hover">
             <thead>
               <tr>
                 <th>Company</th>
                 <th>Position</th>
                 <th>Status</th>
+                <th>Applied On</th>
               </tr>
             </thead>
             <tbody>
               {% for app in applications %}
-              <tr>
+              <tr
+                class="{% if app.status == 'shortlisted' %}table-success{% elif app.status == 'rejected' %}table-danger{% endif %}"
+              >
                 <td>{{ app.company }}</td>
                 <td>{{ app.position }}</td>
-                <td>{{ app.status }}</td>
+                <td>
+                  {% if app.status == 'applied' %}
+                  <span class="badge badge-secondary">Applied</span>
+                  {% elif app.status == 'shortlisted' %}
+                  <span class="badge badge-success">Shortlisted</span>
+                  {% elif app.status == 'interviewed' %}
+                  <span class="badge badge-info">Interviewed</span>
+                  {% elif app.status == 'rejected' %}
+                  <span class="badge badge-danger">Rejected</span>
+                  {% else %}
+                  <span class="badge badge-secondary">{{ app.status }}</span>
+                  {% endif %}
+                </td>
+                <td>{{ app.applied_date }}</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
+          {% else %}
+          <p class="text-center py-3">You haven't applied to any jobs yet.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Faculty Feedback -->
+      <div class="card shadow">
+        <div
+          class="card-header py-3 d-flex justify-content-between align-items-center"
+        >
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-comments"></i> Faculty Feedback {% if
+            feedback|length > 0 %}
+            <span class="badge badge-pill badge-danger"
+              >{{ feedback|length }}</span
+            >
+            {% endif %}
+          </h4>
+          {% if feedback|length > 0 %}
+          <span class="text-muted small">New feedback available</span>
+          {% endif %}
+        </div>
+        <div class="card-body feedback-section">
+          {% if feedback|length > 0 %} {% for fb in feedback %}
+          <div
+            class="media mb-3 p-3 border-bottom {% if fb.is_new %}bg-light border-left border-info{% endif %}"
+          >
+            <div class="media-body">
+              <h5 class="mt-0">
+                {{ fb.fullname }}
+                <small class="text-muted float-right"
+                  >{{ fb.created_at }}</small
+                >
+              </h5>
+              <p>{{ fb.message }}</p>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-center py-3">No feedback available.</p>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Apply Job Confirmation Modal -->
+<div
+  class="modal fade"
+  id="applyJobModal"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="applyJobModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="applyJobModalLabel">Confirm Application</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to apply for the position of
+          <strong id="modal-position"></strong> at
+          <strong id="modal-company"></strong>?
+        </p>
+        <p class="text-muted small">
+          This will submit your profile for consideration. You will be notified
+          if you're shortlisted for an interview.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Cancel
+        </button>
+        <a href="#" id="confirmApplyBtn" class="btn btn-primary"
+          >Confirm Application</a
+        >
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Job filter and sort functionality
+  $(document).ready(function () {
+    // Handle job application modal
+    $(".apply-btn").on("click", function () {
+      var jobId = $(this).data("job-id");
+      var company = $(this).data("company");
+      var position = $(this).data("position");
+
+      $("#modal-company").text(company);
+      $("#modal-position").text(position);
+      $("#confirmApplyBtn").attr("href", "/apply_job/" + jobId);
+    });
+
+    // Handle show more/less for job descriptions
+    $(".show-more-link").on("click", function (e) {
+      e.preventDefault();
+      var $link = $(this);
+      var $description = $link.prev(".job-description");
+
+      if ($description.hasClass("collapse")) {
+        $description.removeClass("collapse");
+        $link.text("Show less");
+      } else {
+        $description.addClass("collapse");
+        $link.text("Show more details");
+      }
+    });
+
+    // Handle job search
+    $("#jobSearch").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      $("#jobsList .job-card").filter(function () {
+        var matches =
+          $(this).data("company").toString().toLowerCase().indexOf(value) >
+            -1 ||
+          $(this).data("position").toString().toLowerCase().indexOf(value) > -1;
+        $(this).toggle(matches);
+      });
+    });
+
+    // Handle job filtering
+    $("[data-filter]").on("click", function (e) {
+      e.preventDefault();
+      var filter = $(this).data("filter");
+
+      if (filter === "all") {
+        $(".job-card").show();
+      } else {
+        $(".job-card").hide();
+        $('.job-card[data-type="' + filter + '"]').show();
+      }
+
+      $("#jobFilterDropdown").text("Filter: " + $(this).text());
+    });
+
+    // Handle job sorting
+    $("[data-sort]").on("click", function (e) {
+      e.preventDefault();
+      var sortBy = $(this).data("sort");
+      var $jobsList = $("#jobsList");
+      var $jobs = $jobsList.children(".job-card").get();
+
+      $jobs.sort(function (a, b) {
+        if (sortBy === "company") {
+          return $(a).data("company").localeCompare($(b).data("company"));
+        } else if (sortBy === "cgpa") {
+          return $(a).data("cgpa") - $(b).data("cgpa");
+        }
+        // Default sort is by recency, which is the original order
+        return 0;
+      });
+
+      $.each($jobs, function (index, job) {
+        $jobsList.append(job);
+      });
+
+      $("#jobFilterDropdown").text("Sort: " + $(this).text());
+    });
+
+    // Mark all feedback as seen after 3 seconds
+    setTimeout(function () {
+      $(".feedback-section .bg-light").removeClass(
+        "bg-light border-left border-info"
+      );
+    }, 3000);
+  });
+</script>
 {% endblock %}

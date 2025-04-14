@@ -1,0 +1,492 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Post New Job</h2>
+    </div>
+    <div class="col-md-4 text-right">
+      {% if session.get('role') == 'admin' %}
+      <a href="{{ url_for('adminHome') }}" class="btn btn-secondary"
+        >Back to Admin Dashboard</a
+      >
+      {% else %}
+      <a href="{{ url_for('recruiter_dashboard') }}" class="btn btn-secondary"
+        >Back to Dashboard</a
+      >
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %} {% if messages %} {% for message
+  in messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- Job Form -->
+  <div class="card shadow">
+    <div class="card-header py-3">
+      <h4 class="m-0 font-weight-bold text-primary">
+        <i class="fas fa-briefcase"></i> Job Details
+      </h4>
+    </div>
+    <div class="card-body">
+      <form
+        action="{{ url_for('post_job') }}"
+        method="post"
+        class="was-validated"
+      >
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="job_Id">Job ID</label>
+              <input
+                type="text"
+                class="form-control"
+                id="job_Id"
+                name="job_Id"
+                placeholder="Enter Job ID"
+                minlength="6"
+                maxlength="6"
+                required
+              />
+              <div class="valid-feedback">Job ID looks good!</div>
+              <div class="invalid-feedback">
+                Please provide a 6-character Job ID.
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="Company">Company Name</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Company"
+                name="Company"
+                placeholder="Enter Company Name"
+                minlength="3"
+                maxlength="25"
+                required
+              />
+              <div class="valid-feedback">Company name looks good!</div>
+              <div class="invalid-feedback">Please provide a company name.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="Position">Position</label>
+              <select
+                class="form-control"
+                id="Position"
+                name="Position"
+                required
+              >
+                <option value="" selected disabled>Select Position</option>
+                <option value="sde">Software Developer</option>
+                <option value="software-engineer">Software Engineer</option>
+                <option value="data-analyst">Data Analyst</option>
+                <option value="data-engineer">Data Engineer</option>
+                <option value="data-scientist">Data Scientist</option>
+              </select>
+              <div class="valid-feedback">Position selected!</div>
+              <div class="invalid-feedback">Please select a position.</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="Location">Location</label>
+              <input
+                type="text"
+                class="form-control"
+                id="Location"
+                name="Location"
+                placeholder="Job Location"
+                minlength="2"
+                maxlength="30"
+                required
+              />
+              <div class="valid-feedback">Location looks good!</div>
+              <div class="invalid-feedback">Please provide a job location.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="CGPA">Minimum CGPA Required</label>
+              <input
+                type="number"
+                class="form-control"
+                id="CGPA"
+                name="CGPA"
+                placeholder="Minimum CGPA"
+                step="0.01"
+                min="5"
+                max="10"
+                required
+              />
+              <div class="valid-feedback">CGPA looks good!</div>
+              <div class="invalid-feedback">
+                Please specify minimum CGPA requirement (between 5 and 10).
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="type">Job Type</label>
+              <select class="form-control" id="type" name="type" required>
+                <option value="" selected disabled>Select Job Type</option>
+                <option value="Fulltime">Full Time</option>
+                <option value="internship">Internship</option>
+              </select>
+              <div class="valid-feedback">Job type selected!</div>
+              <div class="invalid-feedback">Please select a job type.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Job Description and Requirements -->
+        <div class="row mt-3">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="description">Job Description</label>
+              <textarea
+                class="form-control"
+                id="description"
+                name="description"
+                rows="5"
+                placeholder="Enter detailed job description"
+                required
+              ></textarea>
+              <div class="valid-feedback">Description looks good!</div>
+              <div class="invalid-feedback">
+                Please provide a job description.
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="requirements">Requirements</label>
+              <textarea
+                class="form-control"
+                id="requirements"
+                name="requirements"
+                rows="5"
+                placeholder="Enter skills, qualifications, and experience required"
+                required
+              ></textarea>
+              <div class="valid-feedback">Requirements look good!</div>
+              <div class="invalid-feedback">
+                Please specify job requirements.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Eligible Branches</label>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="BTech-CS"
+                  id="cs"
+                />
+                <label class="form-check-label" for="cs">
+                  B.Tech Computer Science Engineering
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="BTech-EE"
+                  id="ee"
+                />
+                <label class="form-check-label" for="ee">
+                  B.Tech Electrical Engineering
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="BTech-ECE"
+                  id="ece"
+                />
+                <label class="form-check-label" for="ece">
+                  B.Tech Electronics and Communication Engineering
+                </label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="BTech-ME"
+                  id="me"
+                />
+                <label class="form-check-label" for="me">
+                  B.Tech Mechanical Engineering
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="MCA"
+                  id="mca"
+                />
+                <label class="form-check-label" for="mca">
+                  Master in Computer Applications
+                </label>
+              </div>
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  name="Eligibility"
+                  value="MTech-CS"
+                  id="mtechcs"
+                />
+                <label class="form-check-label" for="mtechcs">
+                  M.Tech Computer Science Engineering
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="invalid-feedback">
+            Please select at least one eligible branch.
+          </div>
+        </div>
+
+        <!-- Full-time specific fields -->
+        <div id="fulltime-fields" style="display: none">
+          <div class="card bg-light mt-4 mb-4">
+            <div class="card-header">Full-time Job Details</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="bond">Bond Period (Years)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="bond"
+                      name="bond"
+                      placeholder="Bond Period"
+                      min="1"
+                      max="3"
+                    />
+                    <div class="valid-feedback">Bond period looks good!</div>
+                    <div class="invalid-feedback">
+                      Please specify bond period (between 1-3 years).
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-group">
+                    <label for="package">Annual Package (₹)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="package"
+                      name="package"
+                      placeholder="Annual Package"
+                      min="500000"
+                      max="30000000"
+                    />
+                    <div class="valid-feedback">Package looks good!</div>
+                    <div class="invalid-feedback">
+                      Please specify package amount.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internship specific fields -->
+        <div id="internship-fields" style="display: none">
+          <div class="card bg-light mt-4 mb-4">
+            <div class="card-header">Internship Details</div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="duration">Duration (Months)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="duration"
+                      name="duration"
+                      placeholder="Duration"
+                      min="2"
+                      max="6"
+                    />
+                    <div class="valid-feedback">Duration looks good!</div>
+                    <div class="invalid-feedback">
+                      Please specify duration (2-6 months).
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label for="salary">Monthly Stipend (₹)</label>
+                    <input
+                      type="number"
+                      class="form-control"
+                      id="salary"
+                      name="salary"
+                      placeholder="Monthly Stipend"
+                      min="15000"
+                      max="400000"
+                    />
+                    <div class="valid-feedback">Stipend looks good!</div>
+                    <div class="invalid-feedback">
+                      Please specify monthly stipend.
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <label>PPO Opportunity</label>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="ppo"
+                        id="ppo-yes"
+                        value="yes"
+                      />
+                      <label class="form-check-label" for="ppo-yes">
+                        Yes
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="ppo"
+                        id="ppo-no"
+                        value="no"
+                      />
+                      <label class="form-check-label" for="ppo-no"> No </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary btn-lg px-5">
+            <i class="fas fa-plus-circle mr-2"></i> Post Job
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  // Manage conditional display of fields based on job type
+  $(document).ready(function () {
+    const jobTypeSelect = $("#type");
+    const fulltimeFields = $("#fulltime-fields");
+    const internshipFields = $("#internship-fields");
+
+    // Required field validation for checkboxes (at least one must be selected)
+    const eligibilityCheckboxes = $('input[name="Eligibility"]');
+    const form = $("form");
+
+    form.on("submit", function (e) {
+      if (!eligibilityCheckboxes.is(":checked")) {
+        e.preventDefault();
+        alert("Please select at least one eligible branch.");
+        return false;
+      }
+
+      // Ensure required fields are filled based on job type
+      const jobType = jobTypeSelect.val();
+      if (jobType === "Fulltime") {
+        if (!$("#bond").val() || !$("#package").val()) {
+          e.preventDefault();
+          alert("Please fill all required fields for full-time jobs.");
+          return false;
+        }
+      } else if (jobType === "internship") {
+        if (
+          !$("#duration").val() ||
+          !$("#salary").val() ||
+          !$('input[name="ppo"]:checked').val()
+        ) {
+          e.preventDefault();
+          alert("Please fill all required fields for internships.");
+          return false;
+        }
+      }
+    });
+
+    // Show/hide appropriate fields based on job type selection
+    jobTypeSelect.change(function () {
+      const selectedType = $(this).val();
+
+      if (selectedType === "Fulltime") {
+        fulltimeFields.show();
+        internshipFields.hide();
+
+        // Make fulltime fields required
+        $("#bond, #package").prop("required", true);
+
+        // Make internship fields not required
+        $("#duration, #salary").prop("required", false);
+        $('input[name="ppo"]').prop("required", false);
+      } else if (selectedType === "internship") {
+        internshipFields.show();
+        fulltimeFields.hide();
+
+        // Make internship fields required
+        $("#duration, #salary").prop("required", true);
+        $('input[name="ppo"]').prop("required", true);
+
+        // Make fulltime fields not required
+        $("#bond, #package").prop("required", false);
+      } else {
+        fulltimeFields.hide();
+        internshipFields.hide();
+      }
+    });
+
+    // Initialize fields on page load if type is pre-selected
+    if (jobTypeSelect.val() === "Fulltime") {
+      fulltimeFields.show();
+      internshipFields.hide();
+    } else if (jobTypeSelect.val() === "internship") {
+      internshipFields.show();
+      fulltimeFields.hide();
+    }
+  });
+</script>
+{% endblock %}

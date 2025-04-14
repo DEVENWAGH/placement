@@ -3,7 +3,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Admin Login</title>
+    <title>Admin User Management</title>
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='loginadmin.css') }}"
@@ -12,46 +12,7 @@
   <body>
     <div class="container">
       <div class="row">
-        <div class="col-md-6 mx-auto">
-          <div class="login-box">
-            <div class="background">
-              <div class="shape"></div>
-              <div class="shape"></div>
-            </div>
-            <form
-              class="admin-login-form"
-              action="{{ url_for('loginadmin') }}"
-              method="post"
-            >
-              <h3>Admin Login</h3>
-              <label for="username">Username</label>
-              <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Enter admin username"
-                required
-              />
-              <label for="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                placeholder="Enter password"
-                required
-              />
-              <input type="hidden" name="action" value="login" />
-              <button type="submit" class="btn btn-primary">Login</button>
-
-              {% with messages = get_flashed_messages() %} {% if messages %} {%
-              for message in messages %}
-              <div class="alert alert-warning mt-3">{{ message }}</div>
-              {% endfor %} {% endif %} {% endwith %}
-            </form>
-          </div>
-
-          <!-- User Management section is hidden by default, only visible to logged-in admins -->
-          {% if session.get('loggedin') and session.get('role') == 'admin' %}
+        <div class="col-md-8 mx-auto">
           <div class="user-management mt-5">
             <h2 class="text-center mb-4">User Management</h2>
 
@@ -62,7 +23,7 @@
               <div class="card-body">
                 <form
                   class="management-form"
-                  action="{{ url_for('loginadmin') }}"
+                  action="{{ url_for('admin_manage_users') }}"
                   method="post"
                 >
                   <label for="faculty_username">Faculty Username</label>
@@ -104,7 +65,7 @@
               <div class="card-body">
                 <form
                   class="management-form"
-                  action="{{ url_for('loginadmin') }}"
+                  action="{{ url_for('admin_manage_users') }}"
                   method="post"
                 >
                   <label for="recruiter_username">Recruiter Username</label>
@@ -138,8 +99,12 @@
                 </form>
               </div>
             </div>
+
+            {% with messages = get_flashed_messages() %} {% if messages %} {%
+            for message in messages %}
+            <div class="alert alert-warning mt-3">{{ message }}</div>
+            {% endfor %} {% endif %} {% endwith %}
           </div>
-          {% endif %}
         </div>
       </div>
     </div>

@@ -26,7 +26,7 @@
           <form
             method="POST"
             class="was-validated"
-            action="{{ url_for('create') }}"
+            action="{{ url_for('create_profile') }}"
           >
             <div class="form-row">
               <div class="form-group col-md-6">
@@ -80,8 +80,13 @@
                   class="form-control"
                   id="email"
                   name="email"
-                  required
+                  value="{{ user_email }}"
+                  readonly
                 />
+                <small class="form-text text-muted"
+                  >Email is pre-filled from your registration data and cannot be
+                  changed</small
+                >
               </div>
               <div class="form-group col-md-6">
                 <label for="phone">Phone Number</label>
@@ -205,23 +210,15 @@
               />
             </div>
 
-            <div class="form-group">
-              <label for="fa">Faculty Advisor</label>
-              <input
-                type="text"
-                class="form-control"
-                id="fa"
-                name="fa"
-                required
-              />
-            </div>
-
             <div class="form-button mt-3">
               <button id="submit" type="submit" class="btn btn-primary">
                 Create Profile
               </button>
-              <a href="{{ url_for('home_route') }}" class="btn btn-dark ml-2">
-                Back to Home
+              <a
+                href="{{ url_for('student_dashboard') }}"
+                class="btn btn-dark ml-2"
+              >
+                Back to Dashboard
               </a>
             </div>
           </form>
@@ -258,7 +255,11 @@
         ["MTech-CS", "M.Tech - Computer Science Engineering"],
         ["MTech-EE", "M.Tech - Electrical Engineering"],
         ["MTech-ECE", "M.Tech - Electronics and Communication Engineering"],
-        ["MCA", "Master in Computer Applications"],
+        ["MCA", "Master of Computer Applications"],
+        ["MSc-CS", "M.Sc - Computer Science"],
+        ["MSc-Math", "M.Sc - Mathematics"],
+        ["MSc-Physics", "M.Sc - Physics"],
+        ["MBA", "Master of Business Administration"],
       ];
 
       pgBranches.forEach((branch) => {

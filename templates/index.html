@@ -1,234 +1,319 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>{% block title %} Students {% endblock %}</h1>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-      <th scope="col" class="thead-dark">#</th>
-      <th scope="col" class="thead-dark">Reg Number</th>
-      <th scope="col" class="thead-dark">First-Name</th>
-      <th scope="col" class="thead-dark">Last-Name</th>
-      <th scope="col" class="thead-dark">Date Of Birth</th>
-      <th scope="col" class="thead-dark">Email</th>
-      <th scope="col" class="thead-dark">Phone</th>
-      <th scope="col" class="thead-dark">Address</th>
-      <th scope="col" class="thead-dark">Gender</th>
-      <th scope="col" class="thead-dark">Type</th>
-      <th scope="col" class="thead-dark">CGPA</th>
-      <th scope="col" class="thead-dark">Faculty Advisor</th>
-      <th scope="col" class="thead-dark">Date Added</th>
-    </tr>
-  </thead>
+    <h1>{% block title %} Database Management {% endblock %}</h1>
 
-    {% for s in students %}
+    <!-- Users Table -->
+    <h2>Users</h2>
+    <table class="table table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          <th scope="col" class="thead-dark">#</th>
+          <th scope="col" class="thead-dark">Username</th>
+          <th scope="col" class="thead-dark">Email</th>
+          <th scope="col" class="thead-dark">Role</th>
+          <th scope="col" class="thead-dark">Full Name</th>
+          <th scope="col" class="thead-dark">Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <th scope="row">{{ loop.index }}</th>
+          <td>{{ user.username }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{{ user.fullname }}</td>
+          <td>{{ user.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
 
-    <tbody>
-      <tr>
-        <th scope="row">{{students.index(s)+1}}</th>
-        <td>{{ s[0] }}</td>
-        <td>{{ s[1] }}</td>
-        <td>{{ s[2] }}</td>
-        <td>{{ s[3] }}</td>
-        <td>{{ s[4] }}</td>
-        <td>{{ s[5] }}</td>
-        <td>{{ s[6] }}</td>
-        <td>{{ s[7] }}</td>
-        <td>{{ s[8] }}</td>
-        <td>{{ s[9] }}</td>
-        <td>{{ s[10] }}</td>
-        <td>{{ s[11] }}</td>
+    <!-- User Management Forms -->
+    <div class="row mt-5">
+      <!-- Add Faculty Form -->
+      <div class="col-md-6">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h4 class="m-0 font-weight-bold text-primary">Add Faculty</h4>
+          </div>
+          <div class="card-body">
+            <form action="{{ url_for('view_database') }}" method="post">
+              <div class="form-group">
+                <label for="faculty_username">Username</label>
+                <input type="text" class="form-control" id="faculty_username" name="username" required>
+              </div>
+              <div class="form-group">
+                <label for="faculty_email">Email</label>
+                <input type="email" class="form-control" id="faculty_email" name="email" required>
+              </div>
+              <div class="form-group">
+                <label for="faculty_fullname">Full Name</label>
+                <input type="text" class="form-control" id="faculty_fullname" name="fullname" required>
+              </div>
+              <div class="form-group">
+                <label for="faculty_password">Password</label>
+                <input type="password" class="form-control" id="faculty_password" name="password" required>
+              </div>
+              <input type="hidden" name="action" value="add_faculty">
+              <button type="submit" class="btn btn-success">Add Faculty</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Add Recruiter Form -->
+      <div class="col-md-6">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h4 class="m-0 font-weight-bold text-primary">Add Recruiter</h4>
+          </div>
+          <div class="card-body">
+            <form action="{{ url_for('view_database') }}" method="post">
+              <div class="form-group">
+                <label for="recruiter_username">Username</label>
+                <input type="text" class="form-control" id="recruiter_username" name="username" required>
+              </div>
+              <div class="form-group">
+                <label for="recruiter_email">Email</label>
+                <input type="email" class="form-control" id="recruiter_email" name="email" required>
+              </div>
+              <div class="form-group">
+                <label for="recruiter_fullname">Full Name</label>
+                <input type="text" class="form-control" id="recruiter_fullname" name="fullname" required>
+              </div>
+              <div class="form-group">
+                <label for="recruiter_password">Password</label>
+                <input type="password" class="form-control" id="recruiter_password" name="password" required>
+              </div>
+              <input type="hidden" name="action" value="add_recruiter">
+              <button type="submit" class="btn btn-warning">Add Recruiter</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        <td><a href="/my-link?{{ s[0] }}" ><button type="button" class="btn btn-danger" ">Delete</button></a></td>
+    <!-- Flash Messages -->
+    <div class="row">
+      <div class="col-md-12">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for message in messages %}
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          {% endfor %}
+        {% endif %}
+        {% endwith %}
+      </div>
+    </div>
 
-      </tr>
-    </tbody>
-    {% endfor %}
+    <!-- Students Table -->
+    <h2>Students</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th scope="col" class="thead-dark">#</th>
+          <th scope="col" class="thead-dark">Reg Number</th>
+          <th scope="col" class="thead-dark">First-Name</th>
+          <th scope="col" class="thead-dark">Last-Name</th>
+          <th scope="col" class="thead-dark">Date Of Birth</th>
+          <th scope="col" class="thead-dark">Email</th>
+          <th scope="col" class="thead-dark">Phone</th>
+          <th scope="col" class="thead-dark">Address</th>
+          <th scope="col" class="thead-dark">Gender</th>
+          <th scope="col" class="thead-dark">Type</th>
+          <th scope="col" class="thead-dark">CGPA</th>
+          <th scope="col" class="thead-dark">Faculty Advisor</th>
+          <th scope="col" class="thead-dark">Date Added</th>
+        </tr>
+      </thead>
 
-</table>
+      {% for s in students %}
+      <tbody>
+        <tr>
+          <th scope="row">{{students.index(s)+1}}</th>
+          <td>{{ s[0] }}</td>
+          <td>{{ s[1] }}</td>
+          <td>{{ s[2] }}</td>
+          <td>{{ s[3] }}</td>
+          <td>{{ s[4] }}</td>
+          <td>{{ s[5] }}</td>
+          <td>{{ s[6] }}</td>
+          <td>{{ s[7] }}</td>
+          <td>{{ s[8] }}</td>
+          <td>{{ s[9] }}</td>
+          <td>{{ s[10] }}</td>
+          <td>{{ s[11] }}</td>
+          <td><a href="/my-link?{{ s[0] }}" ><button type="button" class="btn btn-danger" ">Delete</button></a></td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
+    <!-- UG Table -->
+    <h2>UG</h2>
+    <table class="table  table-striped table-bordered table-hover">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Reg Number</th>
+          <th scope="col">Branch</th>
+          <th scope="col">Current Semester</th>
+          <th scope="col">Date Added</th>
+        </tr>
+      </thead>
 
-<h2> UG </h2>
-<table class="table  table-striped table-bordered table-hover">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Reg Number</th>
-      <th scope="col">Branch</th>
-      <th scope="col">Current Semester</th>
-      <th scope="col">Date Added</th>
-    </tr>
-  </thead>
+      {% for u in ugs %}
+      <tbody>
+        <tr>
+          <th scope="row">{{ugs.index(u)+1}}</th>
+          <td>{{ u[0] }}</td>
+          <td>{{ u[1] }}</td>
+          <td>{{ u[2] }}</td>
+          <td>{{ u[3] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
-    {% for u in ugs %}
+    <!-- PG Table -->
+    <h2>PG</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Reg Number</th>
+          <th scope="col">Branch</th>
+          <th scope="col">Current Semester</th>
+          <th scope="col">Date Added</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr>
-        <th scope="row">{{ugs.index(u)+1}}</th>
-        <td>{{ u[0] }}</td>
-        <td>{{ u[1] }}</td>
-        <td>{{ u[2] }}</td>
-        <td>{{ u[3] }}</td>
-      </tr>
-    </tbody>
-    {% endfor %}
+      {% for p in pgs %}
+      <tbody>
+        <tr>
+          <th scope="row">{{pgs.index(p)+1}}</th>
+          <td>{{ p[0] }}</td>
+          <td>{{ p[1] }}</td>
+          <td>{{ p[2] }}</td>
+          <td>{{ p[3] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
-</table>
+    <!-- Jobs Table -->
+    <h2>Jobs</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Job ID</th>
+          <th>Company Name</th>
+          <th>Position</th>
+          <th>Eligible Courses</th>
+          <th>CGPA</th>
+          <th>Location</th>
+          <th>Type</th>
+        </tr>
+      </thead>
 
+      {% for row in job %}
+      <tbody>
+        <tr>
+          <th scope="row">{{job.index(row)+1}}</th>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>{{ row[2] }}</td>
+          <td>{{ row[3] }}</td>
+          <td>{{ row[4] }}</td>
+          <td>{{ row[5] }}</td>
+          <td>{{ row[6] }}</td>
+          <td>
+            <a href="/delete/{{row[0]}}" ><button type="button" class="btn btn-danger" ">Delete</button></a>
+          </td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
-<h2> PG </h2>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-      <th scope="col">#</th>
-      <th scope="col">Reg Number</th>
-      <th scope="col">Branch</th>
-      <th scope="col">Current Semester</th>
-      <th scope="col">Date Added</th>
-    </tr>
-  </thead>
+    <!-- Fulltime Table -->
+    <h2>Fulltime</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Job ID</th>
+          <th>Bond</th>
+          <th>Package</th>
+        </tr>
+      </thead>
 
-    {% for p in pgs %}
+      {% for row in fulltime %}
+      <tbody>
+        <tr>
+          <th scope="row">{{fulltime.index(row)+1}}</th>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>{{ row[2] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
-    <tbody>
-      <tr>
-        <th scope="row">{{pgs.index(p)+1}}</th>
-        <td>{{ p[0] }}</td>
-        <td>{{ p[1] }}</td>
-        <td>{{ p[2] }}</td>
-        <td>{{ p[3] }}</td>
-      </tr>
-    </tbody>
-    {% endfor %}
+    <!-- Internship Table -->
+    <h2>Internship</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Job ID</th>
+          <th>Duration</th>
+          <th>Ppo</th>
+          <th>Stipend</th>
+        </tr>
+      </thead>
 
-</table>
+      {% for row in intern %}
+      <tbody>
+        <tr>
+          <th scope="row">{{intern.index(row)+1}}</th>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+          <td>{{ row[2] }}</td>
+          <td>{{ row[3] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
+    <!-- Applied Jobs Table -->
+    <h2>Applied Jobs</h2>
+    <table class="table table-striped table-bordered  table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Reg Number</th>
+          <th>Companies</th>
+        </tr>
+      </thead>
 
-<h2> Jobs </h2>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-     <th>#</th>
-     <th>Job ID</th>
-     <th>Company Name</th>
-     <th>Position</th>
-     <th>Eligible Courses</th>
-     <th>CGPA</th>
-     <th>Location</th>
-     <th>Type</th>
-    </tr>
-  </thead>
+      {% for row in applied %}
+      <tbody>
+        <tr>
+          <th scope="row">{{applied.index(row)+1}}</th>
+          <td>{{ row[0] }}</td>
+          <td>{{ row[1] }}</td>
+        </tr>
+      </tbody>
+      {% endfor %}
+    </table>
 
-  {% for row in job %}
-    <tbody>
-      <tr>
-        <th scope="row">{{job.index(row)+1}}</th>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-        <td>{{ row[3] }}</td>
-        <td>{{ row[4] }}</td>
-        <td>{{ row[5] }}</td>
-        <td>{{ row[6] }}</td>
-        <td>
-           <a href="/delete/{{row[0]}}" ><button type="button" class="btn btn-danger" ">Delete</button>
-           </a>
-        </td>
-      </tr>
-    </tbody>
-  {% endfor %}
-
-
-
-</table>
-
-
-<h2> Fulltime </h2>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-     <th>#</th>
-     <th>Job ID</th>
-     <th>Bond</th>
-     <th>Package</th>
-    </tr>
-  </thead>
-
-  {% for row in fulltime %}
-    <tbody>
-      <tr>
-        <th scope="row">{{fulltime.index(row)+1}}</th>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-      </tr>
-    </tbody>
-  {% endfor %}
-
-
-
-</table>
-
-
-<h2> Internship </h2>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-     <th>#</th>
-     <th>Job ID</th>
-     <th>Duration</th>
-     <th>Ppo</th>
-     <th>Stipend</th>
-    </tr>
-  </thead>
-
-  {% for row in intern %}
-    <tbody>
-      <tr>
-        <th scope="row">{{intern.index(row)+1}}</th>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-        <td>{{ row[2] }}</td>
-        <td>{{ row[3] }}</td>
-      </tr>
-    </tbody>
-  {% endfor %}
-
-
-
-</table>
-
-
-
-<h2> Applied Jobs </h2>
-<table class="table table-striped table-bordered  table-hover">
-  <thead>
-    <tr>
-     <th>#</th>
-     <th>Reg Number</th>
-     <th>Companies</th>
-    </tr>
-  </thead>
-
-  {% for row in applied %}
-    <tbody>
-      <tr>
-        <th scope="row">{{applied.index(row)+1}}</th>
-        <td>{{ row[0] }}</td>
-        <td>{{ row[1] }}</td>
-      </tr>
-    </tbody>
-  {% endfor %}
-
-
-
-</table>
-
-
-
-
-
-<a link href="/adminhome"><button type="button" class="back btn btn-dark">Back to Home</button></a>
-
-
+    <a link href="/adminhome"><button type="button" class="back btn btn-dark">Back to Home</button></a>
 {% endblock %}

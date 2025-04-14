@@ -1,65 +1,263 @@
-{% extends 'base.html' %}
-
-{% block content %}
+{% extends 'base.html' %} {% block content %}
 <div class="container mt-5">
-  <h2>Faculty Dashboard</h2>
-  <div class="row">
-    <!-- Student Progress -->
+  <div class="row mb-4">
     <div class="col-md-8">
-      <div class="card">
-        <div class="card-header">
-          <h4>Student Placement Progress</h4>
+      <h2>Faculty Dashboard</h2>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %} {% if messages %} {% for message
+  in messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- Placement Stats -->
+  <div class="row mb-4">
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-primary shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-primary text-uppercase mb-1"
+              >
+                Total Students
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ stats.total_students }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-users fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-success shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-success text-uppercase mb-1"
+              >
+                Placed Students
+              </div>
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ stats.placed_students }}
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-4 col-md-6 mb-4">
+      <div class="card border-left-info shadow h-100 py-2">
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div
+                class="text-xs font-weight-bold text-info text-uppercase mb-1"
+              >
+                Placement Rate
+              </div>
+              <div class="row no-gutters align-items-center">
+                <div class="col-auto">
+                  <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">
+                    {{ stats.placement_rate }}%
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="progress progress-sm mr-2">
+                    <div
+                      class="progress-bar bg-info"
+                      role="progressbar"
+                      style="width: {{ stats.placement_rate }}%"
+                      aria-valuenow="{{ stats.placement_rate }}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <i class="fas fa-percentage fa-2x text-gray-300"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Student Progress Monitoring -->
+    <div class="col-md-8">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-users"></i> Student Placement Progress
+          </h4>
         </div>
         <div class="card-body">
-          <table class="table">
+          {% if students|length > 0 %}
+          <table class="table table-hover">
             <thead>
               <tr>
-                <th>Student</th>
+                <th>Name</th>
+                <th>Registration No.</th>
+                <th>CGPA</th>
                 <th>Applications</th>
+                <th>Shortlisted</th>
                 <th>Status</th>
-                <th>Feedback</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {% for student in students %}
               <tr>
-                <td>{{ student.name }}</td>
-                <td>{{ student.applications|length }}</td>
-                <td>{{ student.status }}</td>
+                <td>{{ student.firstName }} {{ student.lastName }}</td>
+                <td>{{ student.regNo }}</td>
+                <td>{{ student.cgpa }}</td>
+                <td>{{ student.application_count }}</td>
+                <td>{{ student.shortlisted_count }}</td>
                 <td>
-                  <button class="btn btn-sm btn-info" 
-                    data-toggle="modal" 
-                    data-target="#feedbackModal-{{ student.id }}">
-                    Add Feedback
-                  </button>
+                  {% if student.is_placed %}
+                  <span class="badge badge-success">Placed</span>
+                  {% else %}
+                  <span class="badge badge-secondary">Not Placed</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="btn-group">
+                    <a
+                      href="{{ url_for('student_progress', student_id=student.regNo) }}"
+                      class="btn btn-sm btn-info"
+                      >View Details</a
+                    >
+                    <button
+                      class="btn btn-sm btn-primary"
+                      data-toggle="modal"
+                      data-target="#feedbackModal-{{ student.regNo }}"
+                    >
+                      Add Feedback
+                    </button>
+                  </div>
                 </td>
               </tr>
+
+              <!-- Feedback Modal -->
+              <div
+                class="modal fade"
+                id="feedbackModal-{{ student.regNo }}"
+                tabindex="-1"
+                role="dialog"
+                aria-labelledby="feedbackModalLabel"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="feedbackModalLabel">
+                        Give Feedback to {{ student.firstName }} {{
+                        student.lastName }}
+                      </h5>
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <form
+                      action="{{ url_for('submit_feedback') }}"
+                      method="post"
+                    >
+                      <div class="modal-body">
+                        <input
+                          type="hidden"
+                          name="student_id"
+                          value="{{ student.regNo }}"
+                        />
+                        <div class="form-group">
+                          <label for="message">Feedback</label>
+                          <textarea
+                            class="form-control"
+                            id="message"
+                            name="message"
+                            rows="4"
+                            required
+                          ></textarea>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button
+                          type="button"
+                          class="btn btn-secondary"
+                          data-dismiss="modal"
+                        >
+                          Close
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                          Submit Feedback
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
               {% endfor %}
             </tbody>
           </table>
+          {% else %}
+          <p class="text-center py-3">No students found.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Feedback -->
+    <div class="col-md-4">
+      <div class="card shadow">
+        <div class="card-header py-3">
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-comments"></i> Your Recent Feedback
+          </h4>
+        </div>
+        <div class="card-body">
+          {% if feedback_history|length > 0 %} {% for feedback in
+          feedback_history %}
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <strong>{{ feedback.firstName }} {{ feedback.lastName }}</strong>
+              <small class="text-muted float-right"
+                >{{ feedback.created_at }}</small
+              >
+            </div>
+            <div class="card-body">
+              <p class="card-text">{{ feedback.message }}</p>
+            </div>
+          </div>
+          {% endfor %} {% else %}
+          <p class="text-center py-3">No feedback history available.</p>
+          {% endif %}
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<!-- Feedback Modals -->
-{% for student in students %}
-<div class="modal fade" id="feedbackModal-{{ student.id }}">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Feedback for {{ student.name }}</h5>
-      </div>
-      <div class="modal-body">
-        <form method="POST" action="{{ url_for('submit_feedback') }}">
-          <input type="hidden" name="student_id" value="{{ student.id }}">
-          <textarea class="form-control" name="feedback" required></textarea>
-          <button type="submit" class="btn btn-primary mt-3">Submit</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-{% endfor %}
 {% endblock %}

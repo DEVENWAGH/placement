@@ -1,0 +1,56 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row">
+    <div class="col-md-6 offset-md-3 text-center">
+      <div class="card shadow">
+        <div class="card-body p-5">
+          <h1 class="display-1 text-danger mb-4">
+            <i class="fas fa-exclamation-circle"></i> 404
+          </h1>
+          <h2 class="mb-4">Page Not Found</h2>
+          <p class="lead mb-4">
+            The page you're looking for doesn't exist or has been moved.
+          </p>
+
+          {% if session.get('role') == 'student' %}
+          <a
+            href="{{ url_for('student_dashboard') }}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="fas fa-home"></i> Back to Dashboard
+          </a>
+          {% elif session.get('role') == 'recruiter' %}
+          <a
+            href="{{ url_for('recruiter_dashboard') }}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="fas fa-home"></i> Back to Dashboard
+          </a>
+          {% elif session.get('role') == 'faculty' %}
+          <a
+            href="{{ url_for('faculty_dashboard') }}"
+            class="btn btn-primary btn-lg"
+          >
+            <i class="fas fa-home"></i> Back to Dashboard
+          </a>
+          {% elif session.get('role') == 'admin' %}
+          <a href="{{ url_for('adminHome') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-home"></i> Back to Admin Home
+          </a>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-sign-in-alt"></i> Go to Login
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <p>
+          If you believe this is an error, please contact the administrator.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,110 @@
+/* Custom styling for student dashboard */
+
+/* Job card hover effect */
+.job-card:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+/* Feedback section */
+.feedback-section .media {
+  transition: background-color 0.3s ease;
+}
+
+.feedback-section .border-info {
+  border-left-width: 4px !important;
+}
+
+/* Badge styling */
+.badge-pill {
+  font-size: 0.7em;
+  vertical-align: middle;
+  margin-left: 5px;
+}
+
+/* Job description collapse */
+.job-description.collapse {
+  height: 0;
+  overflow: hidden;
+  display: block;
+}
+
+.job-description {
+  transition: height 0.3s ease;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Search input styling */
+#jobSearch {
+  border-radius: 20px;
+  padding-left: 15px;
+  background-color: #f8f9fc;
+  border-color: #eaecf4;
+}
+
+#jobSearch:focus {
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+  border-color: #bac8f3;
+}
+
+/* Animation for new feedback */
+@keyframes highlight {
+  0% {
+    background-color: rgba(78, 115, 223, 0.1);
+  }
+  50% {
+    background-color: rgba(78, 115, 223, 0.2);
+  }
+  100% {
+    background-color: rgba(78, 115, 223, 0.1);
+  }
+}
+
+.feedback-section .bg-light {
+  animation: highlight 2s infinite;
+}
+
+/* View Jobs Page Styling */
+.job-item .card {
+  transition: transform 0.2s;
+}
+
+.job-item .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.job-item .card-header {
+  border-bottom: 2px solid #eaecf4;
+}
+
+.job-item .badge {
+  font-size: 0.8rem;
+  padding: 0.35em 0.65em;
+}
+
+.job-item .card-footer {
+  background-color: #f8f9fc;
+}
+
+/* Expand/collapse styling */
+.job-item [data-toggle="collapse"] {
+  text-decoration: none;
+}
+
+.job-item .card-body .card {
+  border: none;
+  margin-top: 0.5rem;
+}
+
+.job-item .card-body .card-body {
+  padding: 0.75rem;
+}
+
+/* Applied button styling */
+.apply-btn:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s;
+}

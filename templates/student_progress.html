@@ -1,0 +1,241 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Student Progress</h2>
+      <div class="mb-2">
+        <a
+          href="{{ url_for('faculty_dashboard') }}"
+          class="btn btn-sm btn-outline-secondary"
+        >
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+    <div class="col-md-4 text-right">
+      <button
+        type="button"
+        class="btn btn-primary"
+        data-toggle="modal"
+        data-target="#feedbackModal"
+      >
+        <i class="fas fa-comment"></i> Add Feedback
+      </button>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %} {% if messages %} {% for message
+  in messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- Student Info Card -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h4 class="m-0 font-weight-bold text-primary">
+        <i class="fas fa-user-graduate"></i> Student Information
+      </h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p>
+            <strong>Name:</strong> {{ student.firstName }} {{ student.lastName
+            }}
+          </p>
+          <p><strong>Registration No:</strong> {{ student.regNo }}</p>
+          <p><strong>Email:</strong> {{ student.email }}</p>
+          <p><strong>Phone:</strong> {{ student.phoneNo }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>CGPA:</strong> {{ student.cgpa }}</p>
+          <p><strong>Course Type:</strong> {{ student.type }}</p>
+          <p><strong>Faculty Advisor:</strong> {{ student.fa }}</p>
+          <p><strong>Date Of Birth:</strong> {{ student.dob }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Job Applications -->
+    <div class="col-md-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-file-alt"></i> Job Applications
+          </h4>
+        </div>
+        <div class="card-body">
+          {% if applications|length > 0 %}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Position</th>
+                <th>Status</th>
+                <th>Applied On</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for app in applications %}
+              <tr
+                class="{% if app.status == 'shortlisted' %}table-success{% elif app.status == 'rejected' %}table-danger{% endif %}"
+              >
+                <td>{{ app.company }}</td>
+                <td>{{ app.position }}</td>
+                <td>
+                  <span
+                    class="badge {% if app.status == 'applied' %}badge-secondary{% elif app.status == 'shortlisted' %}badge-success{% elif app.status == 'interviewed' %}badge-info{% elif app.status == 'rejected' %}badge-danger{% endif %}"
+                  >
+                    {{ app.status|capitalize }}
+                  </span>
+                </td>
+                <td>{{ app.applied_date }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-center py-3">No applications submitted yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Upcoming Interviews -->
+    <div class="col-md-6">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h4 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-calendar-check"></i> Scheduled Interviews
+          </h4>
+        </div>
+        <div class="card-body">
+          {% if interviews|length > 0 %}
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Position</th>
+                <th>Date & Time</th>
+                <th>Meeting Link</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for interview in interviews %}
+              <tr>
+                <td>{{ interview.company }}</td>
+                <td>{{ interview.position }}</td>
+                <td>{{ interview.schedule_time }}</td>
+                <td>
+                  <a
+                    href="{{ interview.meeting_link }}"
+                    target="_blank"
+                    class="btn btn-sm btn-info"
+                  >
+                    <i class="fas fa-video"></i> Join
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="text-center py-3">No interviews scheduled yet.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback History -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h4 class="m-0 font-weight-bold text-primary">
+        <i class="fas fa-comments"></i> Feedback History
+      </h4>
+    </div>
+    <div class="card-body">
+      {% if feedback|length > 0 %} {% for fb in feedback %}
+      <div class="card mb-3">
+        <div class="card-header bg-light">
+          <strong>{{ fb.fullname }}</strong>
+          <small class="text-muted float-right">{{ fb.created_at }}</small>
+        </div>
+        <div class="card-body">
+          <p class="card-text">{{ fb.message }}</p>
+        </div>
+      </div>
+      {% endfor %} {% else %}
+      <p class="text-center py-3">No feedback history available.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div
+    class="modal fade"
+    id="feedbackModal"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="feedbackModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="feedbackModalLabel">
+            Give Feedback to {{ student.firstName }} {{ student.lastName }}
+          </h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{{ url_for('submit_feedback') }}" method="post">
+          <div class="modal-body">
+            <input
+              type="hidden"
+              name="student_id"
+              value="{{ student.regNo }}"
+            />
+            <div class="form-group">
+              <label for="message">Feedback</label>
+              <textarea
+                class="form-control"
+                id="message"
+                name="message"
+                rows="4"
+                required
+              ></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Submit Feedback
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

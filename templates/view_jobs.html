@@ -1,0 +1,250 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mt-5">
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <h2>Available Job Opportunities</h2>
+      <p>Here are all the jobs matching your qualifications</p>
+    </div>
+    <div class="col-md-4 text-right">
+      <a
+        href="{{ url_for('student_dashboard') }}"
+        class="btn btn-outline-primary"
+      >
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %} {% if messages %} {% for message
+  in messages %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endfor %} {% endif %} {% endwith %}
+
+  <!-- Search and Filter Controls -->
+  <div class="card shadow mb-4">
+    <div class="card-header py-3 bg-primary text-white">
+      <h4 class="m-0 font-weight-bold">
+        <i class="fas fa-search"></i> Search and Filter Jobs
+      </h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="jobSearchInput">Search by company or position:</label>
+            <input
+              type="text"
+              class="form-control"
+              id="jobSearchInput"
+              placeholder="Start typing..."
+            />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="jobTypeFilter">Filter by Type:</label>
+            <select class="form-control" id="jobTypeFilter">
+              <option value="all">All Jobs</option>
+              <option value="Fulltime">Full-time Only</option>
+              <option value="internship">Internships Only</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="jobSortBy">Sort by:</label>
+            <select class="form-control" id="jobSortBy">
+              <option value="recent">Most Recent</option>
+              <option value="company">Company (A-Z)</option>
+              <option value="cgpa">CGPA (Low to High)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Job Listings -->
+  <div class="row" id="jobListingsContainer">
+    {% if jobs|length > 0 %} {% for job in jobs %}
+    <div
+      class="col-lg-6 mb-4 job-item"
+      data-type="{{ job.type }}"
+      data-company="{{ job.company|lower }}"
+      data-position="{{ job.position|lower }}"
+      data-cgpa="{{ job.cgpa }}"
+    >
+      <div class="card shadow h-100">
+        <div
+          class="card-header py-3 d-flex justify-content-between align-items-center"
+        >
+          <h5 class="m-0 font-weight-bold text-primary">{{ job.company }}</h5>
+          <span
+            class="badge {% if job.type == 'Fulltime' %}badge-primary{% else %}badge-info{% endif %}"
+            >{{ job.type }}</span
+          >
+        </div>
+        <div class="card-body">
+          <div class="row no-gutters align-items-center">
+            <div class="col mr-2">
+              <div class="h5 mb-0 font-weight-bold text-gray-800">
+                {{ job.position }}
+              </div>
+              <div class="text-xs font-weight-bold text-secondary mb-1">
+                <i class="fas fa-map-marker-alt"></i> {{ job.loc }}
+              </div>
+              <div class="text-xs font-weight-bold text-success mb-1">
+                <i class="fas fa-graduation-cap"></i> Min CGPA: {{ job.cgpa }}
+              </div>
+              <div class="text-sm mb-2">{{ job.compensation }}</div>
+
+              {% if job.description %}
+              <div class="mb-2 mt-3">
+                <a
+                  class="btn btn-sm btn-outline-secondary collapsed"
+                  data-toggle="collapse"
+                  href="#jobDetails{{ loop.index }}"
+                  role="button"
+                >
+                  <span class="show-text">Show Details</span>
+                  <span class="hide-text d-none">Hide Details</span>
+                </a>
+              </div>
+              <div class="collapse" id="jobDetails{{ loop.index }}">
+                <div class="card card-body bg-light">
+                  <h6>Job Description:</h6>
+                  <p class="small">{{ job.description }}</p>
+                  {% if job.requirements %}
+                  <h6>Requirements:</h6>
+                  <p class="small">{{ job.requirements }}</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="text-right">
+            {% if job.job_Id in applied_jobs %}
+            <button class="btn btn-secondary btn-sm" disabled>
+              <i class="fas fa-check"></i> Applied
+            </button>
+            {% else %}
+            <a
+              href="{{ url_for('apply_job', job_id=job.job_Id) }}"
+              class="btn btn-primary btn-sm apply-btn"
+              onclick="return confirm('Are you sure you want to apply for this position?')"
+            >
+              <i class="fas fa-paper-plane"></i> Apply Now
+            </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %} {% else %}
+    <div class="col-12">
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No jobs matching your qualifications
+        are currently available. Please check back later.
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- No Results Message (hidden by default) -->
+  <div class="row mt-3 d-none" id="noResultsMessage">
+    <div class="col-12">
+      <div class="alert alert-warning">
+        <i class="fas fa-exclamation-triangle"></i> No jobs match your search
+        criteria. Try adjusting your filters.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    // Toggle details show/hide text
+    $('[data-toggle="collapse"]').on("click", function () {
+      var $this = $(this);
+      $this.find(".show-text, .hide-text").toggleClass("d-none");
+    });
+
+    // Handle search functionality
+    $("#jobSearchInput").on("keyup", function () {
+      var value = $(this).val().toLowerCase();
+      filterJobs();
+    });
+
+    // Handle type filter
+    $("#jobTypeFilter").on("change", function () {
+      filterJobs();
+    });
+
+    // Handle sorting
+    $("#jobSortBy").on("change", function () {
+      sortJobs($(this).val());
+    });
+
+    function filterJobs() {
+      var searchValue = $("#jobSearchInput").val().toLowerCase();
+      var typeFilter = $("#jobTypeFilter").val();
+      var visibleCount = 0;
+
+      $(".job-item").each(function () {
+        var $job = $(this);
+        var company = $job.data("company").toString().toLowerCase();
+        var position = $job.data("position").toString().toLowerCase();
+        var type = $job.data("type");
+
+        // Check if job matches both search term and type filter
+        var matchesSearch =
+          company.indexOf(searchValue) > -1 ||
+          position.indexOf(searchValue) > -1;
+        var matchesType = typeFilter === "all" || type === typeFilter;
+
+        var shouldShow = matchesSearch && matchesType;
+        $job.toggle(shouldShow);
+
+        if (shouldShow) visibleCount++;
+      });
+
+      // Show/hide no results message
+      if (visibleCount === 0) {
+        $("#noResultsMessage").removeClass("d-none");
+      } else {
+        $("#noResultsMessage").addClass("d-none");
+      }
+    }
+
+    function sortJobs(sortBy) {
+      var $container = $("#jobListingsContainer");
+      var $jobs = $(".job-item").detach();
+
+      $jobs.sort(function (a, b) {
+        var $a = $(a);
+        var $b = $(b);
+
+        if (sortBy === "company") {
+          return $a.data("company").localeCompare($b.data("company"));
+        } else if (sortBy === "cgpa") {
+          return $a.data("cgpa") - $b.data("cgpa");
+        }
+        // Default is 'recent' which is already the order in the DOM
+        return 0;
+      });
+
+      $container.append($jobs);
+      filterJobs(); // Re-apply filters after sorting
+    }
+  });
+</script>
+{% endblock %}
