@@ -1,4 +1,4 @@
-# PlacementHub
+# PlacementHub - Campus Placement Management System
 
 ![David (path)](https://img.shields.io/github/package-json/v/plankanban/planka)
 
@@ -8,6 +8,27 @@ students who wish to be placed and the Companies who offer jobs to the students.
 apply for the jobs if they are eligible. The admin can manage the database and post upcoming job or
 internship opportunity which can be viewed by the students who are eligible for it. Admin can also
 view the Statistics of Current Placement Drive.
+
+## Project Overview
+
+PlacementHub is a comprehensive web-based placement management system designed to streamline the campus recruitment process. It connects students, recruiters, and faculty/administrators on a single platform to facilitate efficient job matching and application tracking.
+
+### Key Features
+
+- **Multi-user Role System**: Different interfaces for students, recruiters, faculty, and administrators
+- **Student Profile Management**: Complete academic and personal details tracking
+- **Job Posting and Matching**: Automatic job eligibility matching based on qualifications
+- **Application Tracking**: End-to-end monitoring of application status
+- **Interview Scheduling**: Tools for scheduling and managing interviews
+- **Placement Statistics**: Real-time analytics and reporting on placement activities
+- **Faculty Feedback System**: Communication channel between faculty and students
+
+### User Roles
+
+1. **Students**: Create profiles, browse eligible jobs, apply for positions, track applications
+2. **Recruiters**: Post job opportunities, review applications, schedule interviews
+3. **Faculty**: Monitor student progress, provide feedback, track placement statistics
+4. **Administrators**: Manage users, view analytics, oversee the entire placement process
 
 ## Use case Diagram for Admin
 
@@ -27,48 +48,116 @@ view the Statistics of Current Placement Drive.
 
 ## Installation and Project Startup Guide
 
-Please refer to these links and make sure you have Python, Flask and Postgres installed and working properly on your machine:
+### Prerequisites
 
-- https://linuxize.com/post/how-to-install-flask-on-ubuntu-20-04/
-- https://www.digitalocean.com/community/tutorials/how-to-use-a-postgresql-database-in-a-flask-application
+- Python 3.7 or higher
+- MySQL Database
+- pip (Python package installer)
 
-Go to your Project Directory.
+### Step 1: Clone or Download the Repository
 
-To run this project type:
+Clone this repository or download it to your local machine.
 
-```bash
-  source venv/bin/activate
-```
-
-```bash
-  export FLASK_APP=app
-```
+### Step 2: Create a Virtual Environment (Recommended)
 
 ```bash
-  export FLASK_ENV=development
+# Navigate to the project directory
+cd "path/to/placement management"
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate the virtual environment
+# For Windows:
+venv\Scripts\activate
+# For macOS/Linux:
+source venv/bin/activate
 ```
+
+### Step 3: Install Required Dependencies
 
 ```bash
-  export DB_USERNAME="sammy"
+pip install -r requirements.txt
 ```
 
-Username might vary from user to user so remember you Username.
+If requirements.txt is not available, install the following packages:
 
 ```bash
-  export DB_PASSWORD="password"
+pip install flask flask-mysqldb flask-wtf flask-login python-dotenv
 ```
 
-Password might vary from user to user so remember you Password.
+### Step 4: Database Setup
+
+1. Create a MySQL database for the project
+
+```sql
+CREATE DATABASE placement_hub;
+USE placement_hub;
+```
+
+2. Import the provided SQL schema (if available) or create the required tables manually
 
 ```bash
-  flask run
+mysql -u username -p placement_hub < database_schema.sql
 ```
 
-If everything worked fine then you should see:
+3. Configure environment variables by updating the .env file in the project root:
+
+```
+DB_NAME=placement_hub
+DB_USER=your_mysql_username
+DB_PASSWORD=your_mysql_password
+DB_HOST=localhost
+```
+
+### Step 5: Run the Application
+
+```bash
+# Navigate to the placement folder
+cd placement
+
+# Run the Flask application
+python app.py
+```
+
+The server will start, typically at http://127.0.0.1:5000/
 
 ![](https://drive.google.com/uc?export=view&id=1W1C8ITwn6f7QwhmTXD8mj8n35D6hnq-s)
 
-Now Open any browser and type the https link provided in the running server (https://127.0.0.1:5000).
+Now open any browser and access the URL provided in the running server (http://127.0.0.1:5000).
+
+### Default Admin Login
+
+- Username: admin
+- Password: admin123
+
+### Database Structure Overview
+
+The system uses the following main tables:
+
+- Users: Stores user credentials and roles
+- Students: Contains student profile information
+- Companies: Lists registered companies
+- Jobs: Details of job/internship postings
+- Applications: Tracks student applications to jobs
+- Feedback: Faculty feedback on student profiles
+
+### Troubleshooting
+
+1. Database Connection Issues:
+
+   - Verify MySQL is running
+   - Check the credentials in your .env file
+   - Ensure the database exists
+
+2. Module Import Errors:
+
+   - Make sure all dependencies are installed
+   - Activate the virtual environment if using one
+
+3. Server Start Problems:
+   - Check if the port is already in use
+   - Review error logs for specific issues
 
 ## Demo
 
